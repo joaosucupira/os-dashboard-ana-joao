@@ -1,0 +1,4 @@
+customtkinter==5.2.2
+matplotlib==3.8.4
+pandas==2.2.2
+Pillow==8.4.0
