@@ -10,6 +10,9 @@ from os import path
 
 libc = ctypes.CDLL(None)
 
+
+# NOTA: Nao precisa ser todas essas classes procura fazer o que o requisito pede e imprimir no console msm
+
 # STRUCTS
 
 # Classe implementando uma struct C para tratar dados brutos das chamadas de sistema
