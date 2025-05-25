@@ -10,11 +10,11 @@ class TabelaProcessosView(ctk.CTk):
     def mostrar_processos(self, processos):
         self.tabela.delete("0.0", "end")
         for proc in processos:
-            linha = f"{str(proc['pid']):<10}{str(proc['nome'])[:31]:<40}{str(proc['usuario'])[:21]:<22}{str(proc['threads']):<10}\n"
+            linha = f"{str(proc['pid']):<10}{str(proc['nome'])[:31]:<40}{str(proc['usuario'])[:21]:<22}{str(proc['threads']):<10}{str(proc['estado']):<15}\n"
             self.tabela.insert("end", linha)
 
     def monta_header(self):
-        header_text = f"{'PID':<10}{'Nome':<40}{'Usuário':<22}{'Threads':<10}\n"
+        header_text = f"{'PID':<10}{'Nome':<40}{'Usuário':<22}{'Threads':<10}{'Estado':<15}\n"
         header = CTkLabel(
                     self,
                     text=header_text,

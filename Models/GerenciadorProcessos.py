@@ -21,16 +21,20 @@ class GerenciadorProcessos:
                                     threads = int(line.split()[1])
                                 if line.startswith("Name"):
                                     name = line.split()[1]
+                                if line.startswith("State"):
+                                    estado = line.split()[1]
                                 # if uid is not None and threads is not None:
                                 #     break
                         if uid is not None:
                             # Conversão do valor numério do uid para nome do usuário
                             usuario = self.uid_para_nome(uid)
+                            estado = self.state_id_para_nome(estado)
                             processos.append({
                                 "pid": pid,
                                 "nome": name,
                                 "usuario": usuario,
-                                "threads": threads
+                                "threads": threads,
+                                "estado": estado
                             })
                     except Exception:
                         continue
@@ -49,4 +53,22 @@ class GerenciadorProcessos:
         except Exception:
             pass
         return f"UID {uid}"
+    
+    def state_id_para_nome(self, state_id):
+
+        estados = {
+            "R": "Executando",
+            "S": "Dormindo (interrompível)",
+            "D": "Dormindo (ininterruptível)",
+            "Z": "Zumbi",
+            "T": "Parado",
+            "t": "Parado por rastreamento",
+            "X": "Morto",
+            "x": "Morto",
+            "K": "Destruído",
+            "W": "Paginação",
+            "P": "Parado+",
+            "I": "Ocioso"
+        }
+        return estados.get(state_id, "Desconhecido")
 
