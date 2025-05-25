@@ -9,7 +9,7 @@ class ViewPrincipal(ctk.CTk):
         self.title("Stich Dashboard - Tela inicial")
         self.geometry("1100x500")
 
-        self.label = CTkLabel(self, text="Bem-vindo Stitch Dashboard", font=("Arial", 18, "bold"))
+        self.label = CTkLabel(self, text="Bem-vindo ao Stitch Dashboard", font=("Arial", 18, "bold"))
         self.label.pack(pady=(30, 20))
 
         # processos

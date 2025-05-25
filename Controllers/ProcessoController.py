@@ -1,6 +1,9 @@
 from Models.GerenciadorProcessos import GerenciadorProcessos
 from Views.TabelaProcessosView import TabelaProcessosView
 
+import time
+import threading
+
 class ProcessoController:
     def __init__(self, view):
         self.processos = []
