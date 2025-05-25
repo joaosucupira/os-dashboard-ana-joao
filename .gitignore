@@ -1,3 +1,10 @@
 /venv
-
 **/__pycache__/
+/Models/*.pyc
+/Models/**/*.pyc
+/Views/*.pyc
+/Views/**/*.pyc
+/Controllers/*.pyc
+/Controllers/**/*.pyc
+/utils/*.pyc
+/utils/**/*.pyc
