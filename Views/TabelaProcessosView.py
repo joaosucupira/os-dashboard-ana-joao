@@ -1,9 +1,9 @@
 import customtkinter as ctk
 from customtkinter import CTkLabel
 
-class TabelaProcessosView(ctk.CTk):
-    def __init__(self):
-        super().__init__()
+class TabelaProcessosView(ctk.CTkToplevel):
+    def __init__(self, master=None):
+        super().__init__(master=master)
         self.monta_tabela()
 
 
