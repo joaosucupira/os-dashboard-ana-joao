@@ -23,6 +23,7 @@ class GerenciadorMemoria:
             elif "Cached" in linha:
                 self.cached = int(linha.split()[1])
 
+    # Obs: colocar isso aqui em uma thread la no controler
     def atualizaDados(self):
         """
         Atualiza os dados de memória lendo novamente o arquivo /proc/meminfo.
