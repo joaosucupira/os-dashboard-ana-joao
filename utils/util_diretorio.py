@@ -5,6 +5,8 @@ import ctypes.util
 from dataclasses import dataclass
 from typing import Iterator
 
+_SC_PAGESIZE = 30
+_SC_CLK_TCK = 2
 
 # Classe base que simula uma struct C que representa uma entrada de diretório.
 # Usada para interagir com o sistema de arquivos em nível de sistema operacional.
@@ -79,3 +81,23 @@ class GerenciadorDiretorio:
 
     def __exit__(self, exc_type, exc, tb):
         self.close()
+
+    def get_page_size(self):
+        return self.libc.sysconf(_SC_PAGESIZE)
+    
+    def get_clk_tck(self):
+        return self.libc.sysconf(_SC_CLK_TCK)
+
+# Funções uteis
+
+# ...existing code...
+
+def get_page_size():
+    libc = ctypes.CDLL(None)
+    return libc.sysconf(_SC_PAGESIZE)
+
+def get_clk_tck():
+    libc = ctypes.CDLL(None)
+    return libc.sysconf(_SC_CLK_TCK)
+
+# ...existing code...
