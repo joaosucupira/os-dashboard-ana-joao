@@ -1,25 +1,34 @@
+import threading
+import time
 from Models.GerenciadorProcessos import GerenciadorProcessos
 from Views.TabelaProcessosView import TabelaProcessosView
 
-import time
-import threading
-
 class ProcessoController:
-    def __init__(self, view):
-        self.processos = []
-        self.view = view
-
-        self.executar_tabela()
-
-    def atualizar_tabela_periodicamente(self):
-        self.processos = self.model.listar_processos_e_usuarios()
-        self.view.mostrar_processos(self.processos)
-
-        # TKINTER AFTER: Atualiza a cada 2 segundos
-        self.view.after(2000, self.atualizar_tabela_periodicamente)
-
-    def executar_tabela(self):
+    def __init__(self, master):
         self.model = GerenciadorProcessos()
-        self.view = TabelaProcessosView()
-        self.atualizar_tabela_periodicamente()
-        self.view.mainloop()
+        self.view = TabelaProcessosView(master=master)
+        self._stop_event = threading.Event()
+        self._lock = threading.Lock()  # Semáforo para proteger dados compartilhados
+        self._processos = []
+        self._thread = threading.Thread(target=self.coletar_processos_em_thread, daemon=True)
+        self._thread.start()
+        self.view.protocol("WM_DELETE_WINDOW", self.fechar)
+        self._atualizar_interface()
+
+    def coletar_processos_em_thread(self):
+        while not self._stop_event.is_set():
+            processos = self.model.listar_processos_e_usuarios()
+            with self._lock:  # Protege o acesso à lista de processos
+                self._processos = processos
+            time.sleep(2)  # Coleta a cada 2 segundos
+
+    def _atualizar_interface(self):
+        with self._lock:
+            processos = list(self._processos)  # Cópia segura
+        self.view.mostrar_processos(processos)
+        if self.view.winfo_exists():
+            self.view.after(2000, self._atualizar_interface)
+
+    def fechar(self):
+        self._stop_event.set()
+        self.view.destroy()

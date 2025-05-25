@@ -82,15 +82,8 @@ class GerenciadorDiretorio:
     def __exit__(self, exc_type, exc, tb):
         self.close()
 
-    def get_page_size(self):
-        return self.libc.sysconf(_SC_PAGESIZE)
-    
-    def get_clk_tck(self):
-        return self.libc.sysconf(_SC_CLK_TCK)
 
 # Funções uteis
-
-# ...existing code...
 
 def get_page_size():
     libc = ctypes.CDLL(None)
@@ -100,4 +93,3 @@ def get_clk_tck():
     libc = ctypes.CDLL(None)
     return libc.sysconf(_SC_CLK_TCK)
 
-# ...existing code...
