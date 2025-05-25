@@ -13,16 +13,26 @@ class GerenciadorProcessos:
                     try:
                         with open(status_path, "r") as f:
                             uid = None
+                            threads = None
                             for line in f:
                                 if line.startswith("Uid:"):
                                     uid = line.split()[1]
+                                if line.startswith("Threads:"):
+                                    threads = int(line.split()[1])
+                                if uid is not None and threads is not None:
                                     break
                         if uid is not None:
-                            # Busca o nome do usuário manualmente em /etc/passwd
+                            # Conversão do valor numério do uid para nome do usuário
                             usuario = self.uid_para_nome(uid)
-                            processos.append({"pid": pid, "usuario": usuario})
+                            processos.append({
+                                "pid": pid,
+                                "usuario": usuario,
+                                "threads": threads
+                            })
                     except Exception:
                         continue
+        # Ordeno a lista de processos em decrescente para mostrar os mais relevantes
+        processos.sort(key=lambda p: int(p["pid"]), reverse=True)
         return processos
 
     # Conversão do unix ID para nome do usuário
