@@ -19,13 +19,16 @@ class GerenciadorProcessos:
                                     uid = line.split()[1]
                                 if line.startswith("Threads:"):
                                     threads = int(line.split()[1])
-                                if uid is not None and threads is not None:
-                                    break
+                                if line.startswith("Name"):
+                                    name = line.split()[1]
+                                # if uid is not None and threads is not None:
+                                #     break
                         if uid is not None:
                             # Conversão do valor numério do uid para nome do usuário
                             usuario = self.uid_para_nome(uid)
                             processos.append({
                                 "pid": pid,
+                                "nome": name,
                                 "usuario": usuario,
                                 "threads": threads
                             })

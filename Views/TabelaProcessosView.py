@@ -1,19 +1,36 @@
 import customtkinter as ctk
+from customtkinter import CTkLabel
 
 class TabelaProcessosView(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Processos ativos")
-        self.geometry("700x500")
-        self.tabela = ctk.CTkTextbox(self, width=650, height=450, font=("Courier New", 14))
-        self.tabela.pack(fill="both", expand=True, padx=10, pady=10)
+        self.monta_tabela()
+
 
     def mostrar_processos(self, processos):
         self.tabela.delete("0.0", "end")
-        header = f"{'PID':<30}{'Usuário':<32}{'Threads':<30}\n"
-        self.tabela.insert("end", header)
-        self.tabela.insert("end", "-" * 80 + "\n")
         for proc in processos:
-            usuario = str(proc['usuario'])[:31]
-            linha = f"{str(proc['pid']):<30}{str(proc['usuario']):<32}{str(proc['threads']):<30}\n"
+            linha = f"{str(proc['pid']):<10}{str(proc['nome'])[:31]:<40}{str(proc['usuario'])[:21]:<22}{str(proc['threads']):<10}\n"
             self.tabela.insert("end", linha)
+
+    def monta_header(self):
+        header_text = f"{'PID':<10}{'Nome':<40}{'Usuário':<22}{'Threads':<10}\n"
+        header = CTkLabel(
+                    self,
+                    text=header_text,
+                    fg_color="white",
+                    text_color="black",
+                    font=("Courier New", 14, "bold"),
+                    anchor="w",
+                    width=650,
+                    height=30
+                    )
+        return header
+    def monta_tabela(self):
+        self.title("Processos ativos")
+        self.geometry("1100x600")
+        self.header = self.monta_header()
+        self.header.pack(fill="x", padx=10, pady=(0, 10))
+        self.tabela = ctk.CTkTextbox(self, width=1050, height=520, font=("Courier New", 14))
+        self.tabela.pack(fill="both", expand=True, padx=10, pady=(0, 0))
+
