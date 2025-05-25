@@ -1,4 +1,1 @@
 /venv
-/Models/__pycache__/*.pyc
-/Controllers/__pycache__/*.pyc
-/Views/__pycache__/*.pyc
