@@ -13,12 +13,16 @@ class DetalhesProcesso:
         with GerenciadorDiretorio(task_dir) as gd:
             for entry in gd:
                 tid = entry.name
+
+                if tid == "." or tid == ".." : continue 
+
                 thread_info = {"tid": tid}
                 status_path = f'{task_dir}/{tid}/status'
 
                 try:
                     with open(status_path, "r") as f:
                         for line in f:
+
                             if line.startswith("Name:"):
                                 thread_info["name"] = line.split()[1]
                             if line.startswith("State:"):
