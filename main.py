@@ -2,6 +2,7 @@
 # No diretorio raiz rode 'python3 main.py' ou 'python main.py'
 
 from Controllers.PrincipalController import PrincipalController
+from Models.GerenciadorProcessosMemoria import GerenciadorProcessosMemoria
 # from Models.GerenciadorMemoria import GerenciadorMemoria
 
 # import os # A biblioteca 'os' é necessária para clear_screen
@@ -12,8 +13,13 @@ from Controllers.PrincipalController import PrincipalController
 #     os.system('cls' if os.name == 'nt' else 'clear')
 
 def main():
-    pc = PrincipalController()
-    pc.executar()
+    gpm = GerenciadorProcessosMemoria()
+    processos = gpm.listar_processos_e_usuarios()
+    for processo in processos:
+        print(f"PID: {processo['pid']}, Nome: {processo['nome']}, Usuário: {processo['usuario']}, ")
+    
+    # pc = PrincipalController()
+    # pc.executar()
     
 
     # gm = GerenciadorMemoria()
