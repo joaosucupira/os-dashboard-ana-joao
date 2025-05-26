@@ -49,10 +49,9 @@ class GerenciadorProcessos:
                             })
                     except Exception:
                         continue
-        processos.sort(key=lambda p: int(p['mem_kb']), reverse=True)
+        processos.sort(key=lambda p: (-p['cpu_s'], -p['mem_kb'], int(p['pid'])))        
         return processos
 
-    # Conversão do unix ID para nome do usuário
     def uid_para_nome(self, uid):
         try:
             with open("/etc/passwd", "r") as passwd_file:
