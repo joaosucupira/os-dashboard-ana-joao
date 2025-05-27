@@ -29,7 +29,7 @@ class GerenciadorProcessosMemoria:
                     # Try exception para abertura dos arquivos stat e status
                     try:
                         
-                        # Dados a serem lidos do arquivo stat:
+                        # Dados a serem lidos:
                         # - PID, // status
                         # - nome do processo, //status
                         # - usuario, // definido no 2o with, mas eh no status
@@ -67,7 +67,51 @@ class GerenciadorProcessosMemoria:
                                     pss = int(line.split()[1])
                                 elif line.startswith("Rss:"):
                                     rss = int(line.split()[1])
-                            
+
+                        # Acessa o arquivo smaps para obter
+                        # quantidade de páginas de memória alocada, de heap e de stack
+                        with open(smaps_path, "r") as fsmaps:
+                            linhas = fsmaps.readlines()
+                            heap_pages = 0 # Quantidade de páginas de heap
+                            stack_pages = 0 # Quantidade de páginas de stack
+                            code_pages = 0 # Quantidade de páginas de código executável
+                            current_vma = None # Variável para rastrear o tipo de VMA atual
+                            # VMA = mapeamentos de memória virtual (VMAs - Virtual Memory Areas)
+                            # Os processos tem varias areas de memoria virtual, cada uma com suas caracteristicas
+                            # e permissões, como código executável, heap, stack, etc.
+
+                            for line in linhas:
+                                campos = line.split()
+                                # Transforma a linha em uma lista de campos
+                                
+                                # Analisa o segundo campo da linha que corresponde as permissões da VMA
+                                if len(campos) > 1 and "x" in campos[1]:
+                                    # Se a VMA tem permissão de execução, soma as páginas de código
+                                    current_vma = "code"
+
+                                elif line.startswith("[heap]"):
+                                    # Se a linha contém [heap], indica o início da área de heap
+                                    current_vma = "heap"
+
+                                elif line.startswith("[stack]"):
+                                    # Se a linha contém [stack], indica o início da área de stack
+                                    current_vma = "stack"
+
+                                elif current_vma == "code" and line.startswith("Pss:"):
+                                    # Se a linha contém Pss e estamos na área de código, soma a memoria de código
+                                    code_pages += int(line.split()[1])
+
+                                elif current_vma == "heap" and line.startswith("Pss:"):
+                                    # Se a linha contém Pss e estamos na área de heap, soma a memoria de heap
+                                    heap_pages += int(line.split()[1])
+
+                                elif current_vma == "stack" and line.startswith("Pss:"):
+                                    # Se a linha contém Pss e estamos na área de stack, soma a memoria de stack
+                                    stack_pages += int(line.split()[1])
+
+                                elif line.startswith("VmFlags:"):
+                                    # Se esta na linha de flags da VMA, chegou ao fim de uma VMA
+                                    current_vma = None # Reseta 
 
                         if uid is not None:
                             usuario = self.uid_para_nome(uid)
@@ -78,10 +122,15 @@ class GerenciadorProcessosMemoria:
                                 "usuario": usuario,
                                 "memoria_alocada_kb": pss,
                                 "memoria_alocada_paginas": rss // page_t,
+                                "codigo_paginas": code_pages // page_t,
+                                "heap_paginas": heap_pages // page_t,
+                                "stack_paginas": stack_pages // page_t
                             })
                     except Exception:
-                        print(f"Erro ao ler processo {pid}: {entry.name}")
                         continue
+
+        # Ordena os processos pela quantidade de memória alocada em ordem decrescente
+        processos.sort(key=lambda p: int(p['memoria_alocada_kb']), reverse=True)
         
         return processos
 
