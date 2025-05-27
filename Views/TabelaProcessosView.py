@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from customtkinter import CTkLabel
+from customtkinter import CTkLabel, CTkButton
 
 class TabelaProcessosView(ctk.CTkToplevel):
     def __init__(self, master=None):
@@ -12,13 +12,13 @@ class TabelaProcessosView(ctk.CTkToplevel):
 
         self.tabela.delete("0.0", "end")
         for proc in processos:
-            linha = f"{str(proc['pid']):<10}{str(proc['nome'])[:31]:<40}{str(proc['usuario'])[:21]:<22}{str(proc['threads']):<10}{str(proc['estado']):<15}{str(proc['cpu_s']):<13}{proc['mem_kb']/1024:<13.2f}\n"
+            linha = f"{str(proc['pid']):<10}{str(proc['nome'])[:31]:<40}{str(proc['usuario'])[:21]:<22}{str(proc['threads']):<10}{str(proc['estado']):<15}{str(proc['cpu_s']):<16}{proc['mem_kb']/1024:<13.2f}\n"
             self.tabela.insert("end", linha)
-            
+
         self.tabela.yview_moveto(scroll_pos[0])
 
     def monta_header(self):
-        header_text = f"{'PID':<10}{'Nome':<40}{'Usuário':<22}{'Threads':<10}{'Estado':<15}{'CPU (s)':<13}{'Mem (MB)':<13}\n"
+        header_text = f"{'PID':<10}{'Nome':<40}{'Usuário':<22}{'Threads':<10}{'Estado':<15}{'Tempo CPU(s)':<16}{'Mem (MB)':<13}\n"
         header = CTkLabel(
                     self,
                     text=header_text,
@@ -30,6 +30,7 @@ class TabelaProcessosView(ctk.CTkToplevel):
                     height=30
                     )
         return header
+        
     def monta_tabela(self):
         self.title("Processos ativos")
         self.geometry("1100x600")

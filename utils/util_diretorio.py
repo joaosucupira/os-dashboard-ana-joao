@@ -1,7 +1,6 @@
 # Arquivo utilitario focado em manipulações de diretórios utilizando a bibliteca padrao C
 
 import ctypes
-import ctypes.util
 from dataclasses import dataclass
 from typing import Iterator
 
@@ -93,3 +92,13 @@ def get_clk_tck():
     libc = ctypes.CDLL(None)
     return libc.sysconf(_SC_CLK_TCK)
 
+def uid_para_nome(uid):
+    try:
+        with open("/etc/passwd", "r") as passwd_file:
+            for line in passwd_file:
+                partes = line.split(":")
+                if len(partes) > 2 and partes[2] == str(uid):
+                    return partes[0]
+    except Exception:
+        pass
+    return f"UID {uid}"

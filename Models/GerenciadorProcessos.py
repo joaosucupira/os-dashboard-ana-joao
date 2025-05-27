@@ -1,4 +1,4 @@
-from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck
+from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck, uid_para_nome
 
 class GerenciadorProcessos:
     def listar_processos_e_usuarios(self):
@@ -35,7 +35,7 @@ class GerenciadorProcessos:
                                     break
 
                         if uid is not None:
-                            usuario = self.uid_para_nome(uid)
+                            usuario = uid_para_nome(uid)
                             estado = self.state_id_para_nome(estado_id)
 
                             processos.append({
@@ -51,17 +51,6 @@ class GerenciadorProcessos:
                         continue
         processos.sort(key=lambda p: (-p['cpu_s'], -p['mem_kb'], int(p['pid'])))        
         return processos
-
-    def uid_para_nome(self, uid):
-        try:
-            with open("/etc/passwd", "r") as passwd_file:
-                for line in passwd_file:
-                    partes = line.split(":")
-                    if len(partes) > 2 and partes[2] == str(uid):
-                        return partes[0]
-        except Exception:
-            pass
-        return f"UID {uid}"
     
     def state_id_para_nome(self, state_id):
 
@@ -81,3 +70,48 @@ class GerenciadorProcessos:
         }
         return estados.get(state_id, "Desconhecido")
 
+    def carregar_detalhes_processo(self, pid):
+        detalhes = {}
+        status_path = f"{pid}/status"
+        stat_path = f"{pid}/stat"
+
+        try:
+            with open(status_path, "r") as f:
+                for line in f:
+                    if line.startswith("Name:"):
+                        detalhes["nome"] = line.split()[1]
+                    if line.startswith("State:"):
+                        detalhes["estado"] = line.split()[1]
+                    if line.startswith("Uid:"):
+                        uid = line.split()[1]
+                        detalhes["usuario"] = uid_para_nome(uid)
+                    if line.startswith("VmRSS:"):
+                        detalhes["memoria_kb"] = int(line.split()[1])
+                    if line.startswith("Threads:"):
+                        detalhes["threads"] = int(line.split()[1])
+        except Exception:
+            detalhes["nome"] = "?"
+            detalhes["estado"] = "?"
+            detalhes["usuario"] = "?"
+            detalhes["memoria_kb"] = 0
+            detalhes["threads"] = 0
+
+        try:
+            with open(stat_path, "r") as f:
+                campos = f.read().split()
+                prioridade = int(campos[17])
+                tempo_usuario = int(campos[13])
+                tempo_sistema = int(campos[14])
+                total_t = tempo_usuario + tempo_sistema
+                
+                clk_tck = get_clk_tck()
+                detalhes["prioridade"] = prioridade
+                detalhes["cpu_s"] = total_t / clk_tck
+
+        except Exception:
+            detalhes["prioridade"] = "?"
+            detalhes["cpu_s"] = 0.0
+
+        detalhes["cpu_percent"] = "N/A" 
+
+        return detalhes
