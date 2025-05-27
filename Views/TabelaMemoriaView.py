@@ -6,7 +6,7 @@ class TabelaMemoriaView(ctk.CTkToplevel):
         super().__init__(master=master)
         self.monta_tabela()
 
-    def mostrar_memoria(self, dados_memoria):
+    def mostrar_memoria(self, dados_memoria, dados_processos):
         """
         Exibe os dados de memória na tabela.
         Espera um dicionário com as chaves:
@@ -22,6 +22,21 @@ class TabelaMemoriaView(ctk.CTkToplevel):
             f"{dados_memoria["swap_used"]:.2f} kB ({dados_memoria["swap_use_perc"]:.2f}%) de {dados_memoria["swap_total"]:.2f} GB utilizados\n",
         ]
         for linha in linhas:
+            self.tabela.insert("end", linha)
+
+        self.tabela.delete("0.0", "end")
+
+        for proc in dados_processos:
+            linha = (
+                f"{str(proc['pid']):<10}"
+                f"{str(proc['nome'])[:31]:<40}"
+                f"{str(proc['usuario'])[:21]:<22}"
+                f"{proc['memoria_alocada_kb']/1024:<13.2f}"
+                f"{proc['memoria_alocada_paginas']:<13}"
+                f"{proc['codigo_paginas']:<13}"
+                f"{proc['heap_paginas']:<13}"
+                f"{proc['stack_paginas']:<13}\n"
+            )
             self.tabela.insert("end", linha)
 
     def monta_header(self):
