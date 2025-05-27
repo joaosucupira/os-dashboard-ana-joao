@@ -39,6 +39,7 @@ class DetalhesProcesso:
         return self.threads_info
     
     def carregar_detalhes_processo(self):
+        self.carregar_threads()
         detalhes = {}
         status_path = f"{self.proc_dir}/status"
         stat_path = f"{self.proc_dir}/stat"
