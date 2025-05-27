@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from customtkinter import CTkLabel, CTkTextbox, CTkFrame
+from customtkinter import CTkLabel, CTkTextbox
 
 class TabelaProcessosView(ctk.CTkToplevel):
     def __init__(self, master=None):
@@ -44,7 +44,7 @@ class TabelaProcessosView(ctk.CTkToplevel):
         self.tabela.bind("<Button-1>", self.on_click_linha)
     
     def on_click_linha(self, event):
-        # Descobre a linha clicada
+
         index = self.tabela.index(f"@{event.x},{event.y}")
         linha = int(str(index).split('.')[0]) - 1  # -1 porque começa do 1
         if 0 <= linha < len(self.processos_atuais):
@@ -52,5 +52,5 @@ class TabelaProcessosView(ctk.CTkToplevel):
             self.acao_linha(proc)
 
     def acao_linha(self, proc):
-        # Aqui você define o comando desejado
+        
         print(f"Processo clicado: PID={proc['pid']}, Nome={proc['nome']}")

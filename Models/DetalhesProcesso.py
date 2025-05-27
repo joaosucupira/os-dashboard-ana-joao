@@ -42,7 +42,6 @@ class DetalhesProcesso:
         detalhes = {}
         status_path = f"{self.proc_dir}/status"
         stat_path = f"{self.proc_dir}/stat"
-        cmdline_path = f"{self.proc_dir}/cmdline"
 
         # Nome, estado, usuário, prioridade, memória
         try:

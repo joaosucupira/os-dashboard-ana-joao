@@ -5,7 +5,7 @@ from Models.GerenciadorProcessos import GerenciadorProcessos
 from Views.TabelaProcessosView import TabelaProcessosView
 
 from Controllers.DetalhesProcController import DetalhesProcController
-
+from Views.DetalhesProcessoView import DetalhesProcessoView
 
 class ProcessoController:
     def __init__(self, master):
