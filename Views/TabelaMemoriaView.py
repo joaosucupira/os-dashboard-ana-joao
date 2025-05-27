@@ -5,6 +5,7 @@ class TabelaMemoriaView(ctk.CTkToplevel):
     def __init__(self, master=None, abrir_tabela_processos_memoria_callback=None):
         super().__init__(master=master)
         self.monta_tabela()
+        
         # Botão para abrir a tabela de processos de memória
         self.btn_tabela_processos = CTkButton(
             self,
