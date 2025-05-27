@@ -5,7 +5,7 @@ class TabelaMemoriaView(ctk.CTkToplevel):
     def __init__(self, master=None, abrir_tabela_processos_memoria_callback=None):
         super().__init__(master=master)
         self.monta_tabela()
-        
+
         # Botão para abrir a tabela de processos de memória
         self.btn_tabela_processos = CTkButton(
             self,
@@ -17,9 +17,6 @@ class TabelaMemoriaView(ctk.CTkToplevel):
     def monta_header(self):
         header_text = (
             "Resumo do Uso de Memória\n"
-            f"{'PID':<10}{'Nome':<31}{'Usuário':<21}{'Mem (MB)':<13}{'Páginas':<13}"
-            f"{'Código':<13}{'Heap':<13}{'Stack':<13}\n"
-            + "─" * (10 + 31 + 21 + 13*5) + "\n"
         )
         header = CTkLabel(
             self,
