@@ -20,9 +20,7 @@ class GerenciadorMemoria:
 
     # Obs: colocar isso aqui em uma thread la no controler
     def atualizaDados(self):
-        """
-        Atualiza os dados de memória lendo novamente o arquivo /proc/meminfo.
-        """
+        # Atualiza os dados de memória lendo novamente o arquivo /proc/meminfo.
         with open("/proc/meminfo", "r") as f:
             linhas = f.readlines()
 
