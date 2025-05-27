@@ -35,10 +35,8 @@ class DetalhesProcController:
         with self._lock:
             detalhes = dict(self._detalhes)
             threads = list(self._threads)
-
         if hasattr(self.view, "atualizar_detalhes"):
             self.view.atualizar_detalhes(detalhes, threads)
-            
         if self.view.winfo_exists():
             self.view.after(1000, self.atualizar_interface)
 

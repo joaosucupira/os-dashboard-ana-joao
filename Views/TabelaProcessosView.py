@@ -2,10 +2,11 @@ import customtkinter as ctk
 from customtkinter import CTkLabel, CTkTextbox
 
 class TabelaProcessosView(ctk.CTkToplevel):
-    def __init__(self, master=None):
+    def __init__(self, master=None, callback_acao_linha=None):
         super().__init__(master=master)
         self.monta_tabela()
         self.processos_atuais = []
+        self.callback_acao_linha = callback_acao_linha 
 
     def mostrar_processos(self, processos):
         self.processos_atuais = list(processos)
@@ -52,5 +53,7 @@ class TabelaProcessosView(ctk.CTkToplevel):
             self.acao_linha(proc)
 
     def acao_linha(self, proc):
-        
-        print(f"Processo clicado: PID={proc['pid']}, Nome={proc['nome']}")
+        if self.callback_acao_linha:
+            self.callback_acao_linha(proc)
+        else:
+            print(f"Processo clicado: PID={proc['pid']}, Nome={proc['nome']}")

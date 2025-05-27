@@ -2,9 +2,11 @@ import threading
 import time
 
 from Models.GerenciadorProcessos import GerenciadorProcessos
-from Views.TabelaProcessosView import TabelaProcessosView
 
 from Controllers.DetalhesProcController import DetalhesProcController
+from Controllers.DetalhesProcController import DetalhesProcController
+
+from Views.TabelaProcessosView import TabelaProcessosView
 from Views.DetalhesProcessoView import DetalhesProcessoView
 
 class ProcessoController:
@@ -33,7 +35,7 @@ class ProcessoController:
 
     def inicializa(self, master):
         self.model = GerenciadorProcessos()
-        self.view = TabelaProcessosView(master=master)
+        self.view = TabelaProcessosView(master=master, callback_acao_linha=self.abrir_detalhes_processo)
 
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
@@ -45,5 +47,6 @@ class ProcessoController:
         self.view.protocol("WM_DELETE_WINDOW", self.fechar)
         self.atualizar_interface()
 
-    def exibir_detalhes_processo(self, pid, master):
-        DetalhesProcController(pid, master)
+    def abrir_detalhes_processo(self, proc):
+        pid = proc['pid']
+        DetalhesProcController(pid, self.view)
