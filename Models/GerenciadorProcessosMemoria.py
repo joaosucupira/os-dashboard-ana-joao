@@ -1,4 +1,5 @@
 from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck
+import os
 
 class GerenciadorProcessosMemoria:
     def listar_processos_e_usuarios(self):
@@ -7,8 +8,7 @@ class GerenciadorProcessosMemoria:
         processos = []
 
         # Tamanho da pagina e clock ticks por segundo (precisa estudar melhor isso)
-        page_t = get_page_size()
-        clk_tck = get_clk_tck()
+        page_t = os.sysconf('SC_PAGE_SIZE')
 
         
         # Abre o gerenciador de diretorio para acessar o diretorio /proc
@@ -53,20 +53,20 @@ class GerenciadorProcessosMemoria:
                             for line in linhas:
                                 if line.startswith("Name:"):
                                     name = line.split()[1].strip("()")
-                                if line.startswith("Uid:"):
+                                elif line.startswith("Uid:"):
                                     uid = line.split()[1]
 
-                        # Acessa o arquivo status para obter o nome do processo e o UID
-                        # que sera convertido para o nome do usuario
-                        # with open(smaps_rollup_path, "r") as fstatus:
-                        #     linhas = fstatus.readlines()
-                        #     name = None
-                        #     uid = None
-                        #     for line in linhas:
-                        #         if line.startswith("Name:"):
-                        #             name = line.split()[1].strip("()")
-                        #         if line.startswith("Uid:"):
-                        #             uid = line.split()[1]
+                        # Acessa o arquivo smaps_rollup para obter
+                        # a quantidade total de memória alocada e a quantidade total de páginas de memoria
+                        with open(smaps_rollup_path, "r") as fsmaps_rollup:
+                            linhas = fsmaps_rollup.readlines()
+                            pss = None
+                            rss = None
+                            for line in linhas:
+                                if line.startswith("Pss:"):
+                                    pss = int(line.split()[1])
+                                elif line.startswith("Rss:"):
+                                    rss = int(line.split()[1])
                             
 
                         if uid is not None:
@@ -76,7 +76,8 @@ class GerenciadorProcessosMemoria:
                                 "pid": pid,
                                 "nome": name,
                                 "usuario": usuario,
-                                
+                                "memoria_alocada_kb": pss,
+                                "memoria_alocada_paginas": rss // page_t,
                             })
                     except Exception:
                         print(f"Erro ao ler processo {pid}: {entry.name}")

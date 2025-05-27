@@ -16,7 +16,7 @@ def main():
     gpm = GerenciadorProcessosMemoria()
     processos = gpm.listar_processos_e_usuarios()
     for processo in processos:
-        print(f"PID: {processo['pid']}, Nome: {processo['nome']}, Usuário: {processo['usuario']}, ")
+        print(f"PID: {processo['pid']}, Nome: {processo['nome']}, Usuário: {processo['usuario']}, Memória Alocada (kB): {processo['memoria_alocada_kb']}, Páginas: {processo['memoria_alocada_paginas']}")
     
     # pc = PrincipalController()
     # pc.executar()
