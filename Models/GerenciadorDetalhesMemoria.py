@@ -1,6 +1,6 @@
 import os
-#from utils.util_diretorio import GerenciadorDiretorio, uid_para_nome
-from utils.util_diretorio import GerenciadorDiretorio
+from utils.util_diretorio import GerenciadorDiretorio, uid_para_nome, state_id_para_nome
+
 
 class GerenciadorDetalhesMemoria:
     def __init__(self, pid):
@@ -28,7 +28,7 @@ class GerenciadorDetalhesMemoria:
                             if line.startswith("Name:"):
                                 thread_info["name"] = line.split()[1]
                             if line.startswith("State:"):
-                                thread_info["state"] = line.split()[1]
+                                thread_info["state"] = state_id_para_nome(line.split()[1])
 
                 except Exception:
                     thread_info["name"] = "?"
@@ -52,9 +52,10 @@ class GerenciadorDetalhesMemoria:
                     if line.startswith("Name:"):
                         detalhes["nome"] = line.split()[1]
                     if line.startswith("State:"):
-                        detalhes["estado"] = line.split()[1]
+                        detalhes["estado"] = state_id_para_nome(line.split()[1])
                     if line.startswith("Uid:"):
                         uid = line.split()[1]
+                        detalhes["usuario"] = uid_para_nome(uid)
                         #detalhes["usuario"] = uid_para_nome(uid)
                     
         except Exception:
@@ -95,11 +96,11 @@ class GerenciadorDetalhesMemoria:
                     elif line.startswith("Shared_Dirty:"):
                         shared_dirty += int(line.split()[1])
 
-                detalhes["mem_fis_tot"] = size # Memoria fisica total
-                detalhes["rss"] = rss # Memoria fisica residente (memoria realmente utilizada)
-                detalhes["mem_vir_tot"] = swap # Memoria virtual
-                detalhes["mem_compartilhavel"] = shared_clean + shared_dirty 
-                detalhes["mem_gravavel"] = writable_mem # Memoria gravavel
+                detalhes["mem_fis_tot"] = size/1000 # Memoria fisica total
+                detalhes["rss"] = rss/1000 # Memoria fisica residente (memoria realmente utilizada)
+                detalhes["mem_vir_tot"] = swap/1000 # Memoria virtual
+                detalhes["mem_compartilhavel"] = (shared_clean + shared_dirty)/1000 
+                detalhes["mem_gravavel"] = writable_mem/1000 # Memoria gravavel
 
 
         except Exception:
