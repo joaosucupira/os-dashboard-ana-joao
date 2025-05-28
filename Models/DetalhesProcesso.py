@@ -45,7 +45,7 @@ class DetalhesProcesso:
         status_path = f"{self.proc_dir}/status"
         stat_path = f"{self.proc_dir}/stat"
 
-        # Nome, estado, usuário, prioridade, memória
+        # Nome, estado, usuário, prioridade
         try:
             with open(status_path, "r") as f:
                 for line in f:
@@ -56,15 +56,12 @@ class DetalhesProcesso:
                     if line.startswith("Uid:"):
                         uid = line.split()[1]
                         detalhes["usuario"] = uid_para_nome(uid)
-                    if line.startswith("VmRSS:"):
-                        detalhes["memoria_kb"] = int(line.split()[1])
                     if line.startswith("Threads:"):
                         detalhes["threads"] = int(line.split()[1])
         except Exception:
             detalhes["nome"] = "?"
             detalhes["estado"] = "?"
             detalhes["usuario"] = "?"
-            detalhes["memoria_kb"] = 0
             detalhes["threads"] = 0
 
         # Prioridade e tempo de CPU

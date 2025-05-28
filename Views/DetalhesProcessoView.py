@@ -19,7 +19,6 @@ class DetalhesProcessoView(ctk.CTkToplevel):
             f"Estado: {detalhes_dict.get('estado', '?')}\n"
             f"Prioridade: {detalhes_dict.get('prioridade', '?')}\n"
             f"Threads: {detalhes_dict.get('threads', '?')}\n"
-            f"Memória (KB): {detalhes_dict.get('memoria_kb', '?')}\n"
             f"Tempo CPU (s): {detalhes_dict.get('cpu_s', '?')}\n"
             f"%CPU: {detalhes_dict.get('cpu_percent', '?')}\n"
         )
@@ -31,7 +30,7 @@ class DetalhesProcessoView(ctk.CTkToplevel):
         CTkLabel(frame_threads, text="Threads:", font=("Arial", 14, "bold"), anchor="w").pack(anchor="w")
         threads_box = CTkTextbox(frame_threads, width=640, height=300, font=("Courier New", 12))
         threads_box.pack(fill="both", expand=True)
-        # Header com destaque visual (maiusculo e separador)
+
         header = f"{'TID':<10}{'ESTADO':<15}{'NOME':<25}\n"
         threads_box.insert("end", header)
         threads_box.insert("end", "="*50 + "\n")

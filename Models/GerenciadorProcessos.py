@@ -14,7 +14,7 @@ class GerenciadorProcessos:
                 if entry.name.isdigit():
                     pid = entry.name
 
-                    # caminho para acessar nome, estado, n de threads, tempo de cpu e memoria
+                    # caminho para acessar nome, estado, n de threads, tempo de cpu
                     stat_path = f"/proc/{pid}/stat" 
                     # caminho para acessar usuario do processo
                     status_path = f"/proc/{pid}/status"
@@ -22,7 +22,7 @@ class GerenciadorProcessos:
 
                     try:
                         # Iterando stat
-                        name, estado_id, threads, t_cpu, memoria_mb = self.ler_stat(stat_path, clk_tck, page_t)
+                        name, estado_id, threads, t_cpu = self.ler_stat(stat_path, clk_tck)
                         # Iterando status
                         uid = self.ler_uid(status_path)
 
@@ -36,18 +36,17 @@ class GerenciadorProcessos:
                                 "usuario": usuario,
                                 "threads": threads,
                                 "estado": estado,
-                                "cpu_s": t_cpu,
-                                "mem_mb": memoria_mb
+                                "cpu_s": t_cpu
                             })
                     except Exception:
                         continue # ignora todos os diretorios que nao sao processos
 
-        # ordenanado os processos de acordo com 3 critérios principais
-        processos.sort(key=lambda p: (-p['cpu_s'], -p['mem_mb'], int(p['pid'])))        
+        processos.sort(key=lambda p: (-p['cpu_s'], int(p['pid'])))        
         # o retorno será utlizados pelo controller interessado
         return processos 
     
-    def ler_stat(self, stat_path, clk_tck, page_t):
+    def ler_stat(self, stat_path, clk_tck):
+
         # Campos referenciando os respectivos índices do arquivo inline que contém o que precisamos
         with open(stat_path, "r") as fstat:
             campos = fstat.read().split()
@@ -58,9 +57,8 @@ class GerenciadorProcessos:
             tempo_sistema = int(campos[14])
             total_t = tempo_usuario + tempo_sistema
             t_cpu = total_t / clk_tck
-            rss = int(campos[23])
-            memoria_mb = (rss * page_t) / (1024 * 1024)
-        return name, estado_id, threads, t_cpu, memoria_mb
+
+        return name, estado_id, threads, t_cpu
 
     def ler_uid(self, status_path):
         with open(status_path, "r") as fstatus:

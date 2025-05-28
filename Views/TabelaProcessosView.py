@@ -25,8 +25,7 @@ class TabelaProcessosView(ctk.CTkToplevel):
                 f"{proc['usuario'][:21]:<22}"
                 f"{proc['threads']:<10}"
                 f"{proc['estado']:<15}"
-                f"{proc['cpu_s']:<16}"
-                f"{proc['mem_mb']:<13.2f}\n"
+                f"{proc['cpu_s']:<16}\n"
             )
             self.tabela.insert("end", linha_texto)
 
@@ -41,7 +40,6 @@ class TabelaProcessosView(ctk.CTkToplevel):
             f"{'Threads':<10}"
             f"{'Estado':<15}"
             f"{'Tempo CPU(s)':<16}"
-            f"{'Mem (MB)':<13}"
         )
         header = CTkLabel(
             self,
@@ -50,19 +48,19 @@ class TabelaProcessosView(ctk.CTkToplevel):
             text_color="black",
             font=("Courier New", 14, "bold"),
             anchor="w",
-            width=1050,
+            width=950,
             height=30
         )
         return header
 
     def monta_tabela(self):
         self.title("Processos ativos")
-        self.geometry("1100x600")
+        self.geometry("1000x520")
         self.header = self.monta_header()
         self.header.pack(fill="x", padx=10, pady=(0, 10))
 
         # Instancia da tabela
-        self.tabela = CTkTextbox(self, width=1050, height=520, font=("Courier New", 14))
+        self.tabela = CTkTextbox(self, width=950, height=520, font=("Courier New", 14))
         self.tabela.pack(fill="both", expand=True, padx=10, pady=(0, 0))
         self.tabela.bind("<Button-1>", self.on_click_linha)
     
