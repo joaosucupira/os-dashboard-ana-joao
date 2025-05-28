@@ -12,11 +12,14 @@ class ResumoCPUController:
     def atualizar(self):
         if not self.atualizando or not self.view.winfo_exists():
             return
-        uso, ocioso = self.model.calcular_percentuais()
-        n_proc, n_threads = self.model.contar_processos_threads()
-        self.view.atualizar(uso, ocioso, n_proc, n_threads)
-        self.view.after(500, self.atualizar)
+        if self.view.winfo_exists():
+            uso, ocioso = self.model.calcular_percentuais()
+            n_proc, n_threads = self.model.contar_processos_threads()
+        
+            self.view.atualizar(uso, ocioso, n_proc, n_threads)
+            self.view.after(500, self.atualizar)
 
     def fechar(self):
         self.atualizando = False
-        self.view.destroy()
+        if self.view.winfo_exists():
+            self.view.destroy()

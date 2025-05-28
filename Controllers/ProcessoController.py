@@ -29,11 +29,15 @@ class ProcessoController:
 
     def fechar(self):
         self._stop_event.set()
-        self.view.destroy()
+        try:
+            
+            self.view.destroy()
+        except Exception:
+            pass
 
     def inicializa(self, master):
         self.model = GerenciadorProcessos()
-        self.view = TabelaProcessosView(master=master, callback_acao_linha=self.abrir_detalhes_processo)
+        self.view = TabelaProcessosView(master=master, callback_acao_linha=self.abrir_detalhes_processo, callback_resumo_cpu=self.abrir_info_global)
 
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
@@ -50,4 +54,4 @@ class ProcessoController:
         DetalhesProcController(pid, self.view)
 
     def abrir_info_global(self):
-        ResumoCPUController(self)
+        ResumoCPUController(self.view)
