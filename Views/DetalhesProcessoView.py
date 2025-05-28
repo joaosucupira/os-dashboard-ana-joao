@@ -1,13 +1,13 @@
-# Exemplo de trecho para DetalhesProcessoView
-
 import customtkinter as ctk
 from customtkinter import CTkLabel, CTkTextbox, CTkFrame
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 
 class DetalhesProcessoView(ctk.CTkToplevel):
     def __init__(self, master, detalhes_dict, threads_list, pid):
         super().__init__(master=master)
         self.title(f'Detalhes do processo {str(pid)}')
-        self.geometry("700x500")
+        self.geometry("700x650")
         self.resizable(False, True)
 
         frame_detalhes = CTkFrame(self)
@@ -23,6 +23,22 @@ class DetalhesProcessoView(ctk.CTkToplevel):
             f"%CPU: {detalhes_dict.get('cpu_percent', '?')}\n"
         )
         CTkLabel(frame_detalhes, text=texto, font=("Arial", 14), anchor="w", justify="left").pack(anchor="w")
+
+        # Gráfico de pizza do uso de CPU
+        frame_grafico = CTkFrame(self)
+        frame_grafico.pack(fill="x", padx=20, pady=(0, 10))
+        cpu_percent = detalhes_dict.get('cpu_percent', 0)
+        try:
+            cpu_percent = float(cpu_percent)
+        except Exception:
+            cpu_percent = 0.0
+        ocioso = max(0, 100 - cpu_percent)
+        fig, ax = plt.subplots(figsize=(3, 3))
+        ax.pie([cpu_percent, ocioso], labels=["Uso", "Ocioso"], autopct="%1.1f%%", colors=["#ff9999", "#99ff99"])
+        ax.set_title("Uso de CPU do Processo")
+        canvas = FigureCanvasTkAgg(fig, master=frame_grafico)
+        canvas.get_tk_widget().pack()
+        plt.close(fig)
 
         # Threads
         frame_threads = CTkFrame(self)

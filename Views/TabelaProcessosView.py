@@ -3,16 +3,15 @@
 import customtkinter as ctk
 from customtkinter import CTkLabel, CTkTextbox
 
-#tirar isso daqui respeite o mvc
-from Controllers.ResumoCPUController import ResumoCPUController
 
 class TabelaProcessosView(ctk.CTkToplevel):
     # Construtora com o callback que vai chamar a rotina de detalhes ao clique do processo
-    def __init__(self, master=None, callback_acao_linha=None):
+    def __init__(self, master=None, callback_acao_linha=None, callback_resumo_cpu=None):
         super().__init__(master=master)
         self.monta_tabela()
         self.processos_atuais = []
         self.callback_acao_linha = callback_acao_linha 
+        self.callback_resumo_cpu = callback_resumo_cpu
 
     # Atualização de interface
     def mostrar_processos(self, processos):
@@ -89,8 +88,9 @@ class TabelaProcessosView(ctk.CTkToplevel):
     def acao_linha(self, proc):
         if self.callback_acao_linha:
             self.callback_acao_linha(proc)
-        else:
-            print(f"Processo clicado: PID={proc['pid']}, Nome={proc['nome']}")
-    
+
+    # Ação que encadeia as informações globais    
     def abrir_info_globais(self):
-        ResumoCPUController(master=self)
+    
+        if self.callback_resumo_cpu:
+            self.callback_resumo_cpu()
