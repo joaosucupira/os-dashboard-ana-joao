@@ -3,6 +3,9 @@
 import customtkinter as ctk
 from customtkinter import CTkLabel, CTkTextbox
 
+#tirar isso daqui respeite o mvc
+from Controllers.ResumoCPUController import ResumoCPUController
+
 class TabelaProcessosView(ctk.CTkToplevel):
     # Construtora com o callback que vai chamar a rotina de detalhes ao clique do processo
     def __init__(self, master=None, callback_acao_linha=None):
@@ -58,6 +61,11 @@ class TabelaProcessosView(ctk.CTkToplevel):
     def monta_tabela(self):
         self.title("Processos ativos")
         self.geometry("1000x520")
+
+        # Botao para acessar informações globais
+        self.btn_globais = ctk.CTkButton(self, text="Informações Globais", command=self.abrir_info_globais)
+        self.btn_globais.pack(pady=5)
+
         self.header = self.monta_header()
         self.header.pack(fill="x", padx=10, pady=(0, 10))
 
@@ -65,6 +73,7 @@ class TabelaProcessosView(ctk.CTkToplevel):
         self.tabela = CTkTextbox(self, width=950, height=520, font=("Courier New", 14))
         self.tabela.pack(fill="both", expand=True, padx=10, pady=(0, 0))
         self.tabela.bind("<Button-1>", self.on_click_linha)
+
     
     # Detecção do clique
     def on_click_linha(self, event):
@@ -82,3 +91,6 @@ class TabelaProcessosView(ctk.CTkToplevel):
             self.callback_acao_linha(proc)
         else:
             print(f"Processo clicado: PID={proc['pid']}, Nome={proc['nome']}")
+    
+    def abrir_info_globais(self):
+        ResumoCPUController(master=self)

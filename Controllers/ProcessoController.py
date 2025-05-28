@@ -2,12 +2,10 @@ import threading
 import time
 
 from Models.GerenciadorProcessos import GerenciadorProcessos
-
-from Controllers.DetalhesProcController import DetalhesProcController
-from Controllers.DetalhesProcController import DetalhesProcController
-
 from Views.TabelaProcessosView import TabelaProcessosView
-from Views.DetalhesProcessoView import DetalhesProcessoView
+
+from Controllers.DetalhesProcController import DetalhesProcController
+from Controllers.ResumoCPUController import ResumoCPUController
 
 class ProcessoController:
     def __init__(self, master):
@@ -50,3 +48,6 @@ class ProcessoController:
     def abrir_detalhes_processo(self, proc):
         pid = proc['pid']
         DetalhesProcController(pid, self.view)
+
+    def abrir_info_global(self):
+        ResumoCPUController(self)
