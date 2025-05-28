@@ -2,16 +2,18 @@
 # No diretorio raiz rode 'python3 main.py' ou 'python main.py'
 
 from Controllers.PrincipalController import PrincipalController
-from Models.GerenciadorProcessosMemoria import GerenciadorProcessosMemoria
+# from Models.GerenciadorDetalhesMemoria import GerenciadorDetalhesMemoria
 
 def main():
-    # gpm = GerenciadorProcessosMemoria()
-    # processos = gpm.listar_processos_e_usuarios()
-    # for processo in processos:
-    #     print(f"PID: {processo['pid']}, Nome: {processo['nome']}, Usuário: {processo['usuario']}\nMemória Alocada (kB): {processo['memoria_alocada_kb']}, Páginas: {processo['memoria_alocada_paginas']}\nPaginas de Código: {processo['codigo_paginas']}, Páginas de Heap: {processo['heap_paginas']}, Páginas de Stack: {processo['stack_paginas']}\n\n")
     
     pc = PrincipalController()
     pc.executar()
-    
+
+    # gdm = GerenciadorDetalhesMemoria(1)  # Exemplo com PID 1 (init)
+    # dic = gdm.carregar_detalhes_processo()
+
+    # print(f"Nome: {dic.get('nome', '?')}, PID: {gdm.pid}, Usuário: {dic.get('usuario', '?')}, Estado: {dic.get('estado', '?')}, Memória (KB): {dic.get('mem_fis_tot', '?')}")
+
+
 if __name__ == "__main__":
     main()
