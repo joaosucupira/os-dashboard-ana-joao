@@ -7,6 +7,7 @@ class MemoriaController:
     def __init__(self, master):
         self.model = GerenciadorMemoria()
         self.view = TabelaMemoriaView(master=master, abrir_tabela_processos_memoria_callback=self.abrir_tabela_processos_memoria)
+        self.view.protocol("WM_DELETE_WINDOW", self.fechar)
         self.atualizar_tabela_memoria()
 
     def abrir_tabela_processos_memoria(self):
@@ -15,7 +16,16 @@ class MemoriaController:
     def atualizar_tabela_memoria(self):
         dados_memoria = self.model.atualizaDados()
         self.view.mostrar_memoria(dados_memoria)
+        if self.view.winfo_exists():
+            self.view.after(1000, self.atualizar_tabela_memoria)
 
     def mostrar(self):
         self.view.deiconify()
         self.atualizar_tabela_memoria()
+
+    def fechar(self):
+        self.view.destroy()
+
+    def mostrar(self):
+        self.view.deiconify()
+        self.atualizar_interface()
