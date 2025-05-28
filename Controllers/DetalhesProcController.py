@@ -18,8 +18,7 @@ class DetalhesProcController:
         # Aguarda a primeira coleta antes de criar a view
         while not self._detalhes:
             time.sleep(0.05)
-        # print("Detalhes:", self._detalhes)
-        # print("Threads:", self._threads)
+
         self.view = DetalhesProcessoView(master=self.master, detalhes_dict=self._detalhes, threads_list=self._threads)
         self.view.protocol("WM_DELETE_WINDOW", self.fechar)
         self.atualizar_interface()

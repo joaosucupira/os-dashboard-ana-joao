@@ -1,3 +1,5 @@
+# Model especializado na coleta geral de processos de '/proc'
+
 from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck, uid_para_nome
 
 class GerenciadorProcessos:
@@ -57,7 +59,7 @@ class GerenciadorProcessos:
             total_t = tempo_usuario + tempo_sistema
             t_cpu = total_t / clk_tck
             rss = int(campos[23])
-            memoria_kb = (rss * page_t) // 1024
+            memoria_kb = (rss * page_t) / (1024)
         return name, estado_id, threads, t_cpu, memoria_kb
 
     def ler_uid(self, status_path):

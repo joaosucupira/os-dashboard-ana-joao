@@ -1,11 +1,10 @@
-# Arquivo utilitario focado em manipulações de diretórios utilizando a bibliteca padrao C
+# Classes e módulos utilitários que auxiliam mais de um model do projeto em relação ao acesso 
+# dos diretórios de /proc
 
 import ctypes
 from dataclasses import dataclass
 from typing import Iterator
 
-_SC_PAGESIZE = 30
-_SC_CLK_TCK = 2
 
 # Classe base que simula uma struct C que representa uma entrada de diretório.
 # Usada para interagir com o sistema de arquivos em nível de sistema operacional.
@@ -83,6 +82,12 @@ class GerenciadorDiretorio:
 
 
 # Funções uteis
+
+# Indices para parametro de sistemas da função c 'sysconf' para obter respectivamente
+# o tamanho da pagina e o clock ticks por segundo
+
+_SC_PAGESIZE = 30
+_SC_CLK_TCK = 2
 
 def get_page_size():
     libc = ctypes.CDLL(None)
