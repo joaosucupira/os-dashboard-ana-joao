@@ -8,7 +8,7 @@ class DetalhesMemoriaController:
     def __init__(self, pid, master):
         self.pid = pid
         self.master = master
-        self.model = DetalhesMemoria(pid) # Solicita os detalhes do processo identificado por pid
+        self.model = GerenciadorDetalhesMemoria(pid) # Solicita os detalhes do processo identificado por pid
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
         self._detalhes = {}
