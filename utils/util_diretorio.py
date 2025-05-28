@@ -107,3 +107,21 @@ def uid_para_nome(uid):
     except Exception:
         pass
     return f"UID {uid}"
+
+def state_id_para_nome(state_id):
+    estados = {
+        "R": "Executando",
+        "S": "Dormindo",
+        "D": "Travado",
+        "Z": "Zumbi",
+        "T": "Parado",
+        "t": "Parado (rastre.)",
+        "X": "Morto",
+        "x": "Morto",
+        "K": "Destruído",
+        "W": "Paginação",
+        "P": "Parado+",
+        "I": "Ocioso"
+    }
+    # Pode ocorrer do estado Dormindo ser interpretado incorretamente, verifique o estado no proprio proc
+    return estados.get(state_id, "Desconhecido")

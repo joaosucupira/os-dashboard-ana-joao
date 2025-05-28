@@ -1,6 +1,6 @@
 # Model especializado na coleta geral de processos de '/proc'
 
-from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck, uid_para_nome
+from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck, uid_para_nome, state_id_para_nome
 
 class GerenciadorProcessos:
     
@@ -22,14 +22,14 @@ class GerenciadorProcessos:
 
                     try:
                         # Iterando stat
-                        name, estado_id, threads, t_cpu, memoria_kb = self.ler_stat(stat_path, clk_tck, page_t)
+                        name, estado_id, threads, t_cpu, memoria_mb = self.ler_stat(stat_path, clk_tck, page_t)
                         # Iterando status
                         uid = self.ler_uid(status_path)
 
                         if uid is not None:
                  
                             usuario = uid_para_nome(uid)
-                            estado = self.state_id_para_nome(estado_id)
+                            estado = state_id_para_nome(estado_id)
                             processos.append({
                                 "pid": pid,
                                 "nome": name,
@@ -37,13 +37,13 @@ class GerenciadorProcessos:
                                 "threads": threads,
                                 "estado": estado,
                                 "cpu_s": t_cpu,
-                                "mem_kb": memoria_kb
+                                "mem_mb": memoria_mb
                             })
                     except Exception:
                         continue # ignora todos os diretorios que nao sao processos
 
         # ordenanado os processos de acordo com 3 critérios principais
-        processos.sort(key=lambda p: (-p['cpu_s'], -p['mem_kb'], int(p['pid'])))        
+        processos.sort(key=lambda p: (-p['cpu_s'], -p['mem_mb'], int(p['pid'])))        
         # o retorno será utlizados pelo controller interessado
         return processos 
     
@@ -59,8 +59,8 @@ class GerenciadorProcessos:
             total_t = tempo_usuario + tempo_sistema
             t_cpu = total_t / clk_tck
             rss = int(campos[23])
-            memoria_kb = (rss * page_t) / (1024)
-        return name, estado_id, threads, t_cpu, memoria_kb
+            memoria_mb = (rss * page_t) / (1024 * 1024)
+        return name, estado_id, threads, t_cpu, memoria_mb
 
     def ler_uid(self, status_path):
         with open(status_path, "r") as fstatus:
@@ -71,21 +71,3 @@ class GerenciadorProcessos:
                     break
         return uid
 
-    # conversão do uid pra o nome do usuario
-    def state_id_para_nome(self, state_id):
-        estados = {
-            "R": "Executando",
-            "S": "Dormindo",
-            "D": "Travado",
-            "Z": "Zumbi",
-            "T": "Parado",
-            "t": "Parado (rastre.)",
-            "X": "Morto",
-            "x": "Morto",
-            "K": "Destruído",
-            "W": "Paginação",
-            "P": "Parado+",
-            "I": "Ocioso"
-        }
-        # Pode ocorrer do estado Dormindo ser interpretado incorretamente, verifique o estado no proprio proc
-        return estados.get(state_id, "Desconhecido")

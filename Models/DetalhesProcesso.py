@@ -1,5 +1,6 @@
-import os
-from utils.util_diretorio import GerenciadorDiretorio, uid_para_nome
+# Model especializado em coletar informações do processo especidigo atraves de seu identificador
+
+from utils.util_diretorio import GerenciadorDiretorio, uid_para_nome, get_clk_tck, state_id_para_nome
 
 class DetalhesProcesso:
     def __init__(self, pid):
@@ -27,7 +28,7 @@ class DetalhesProcesso:
                             if line.startswith("Name:"):
                                 thread_info["name"] = line.split()[1]
                             if line.startswith("State:"):
-                                thread_info["state"] = line.split()[1]
+                                thread_info["state"] = state_id_para_nome(line.split()[1])
 
                 except Exception:
                     thread_info["name"] = "?"
@@ -51,7 +52,7 @@ class DetalhesProcesso:
                     if line.startswith("Name:"):
                         detalhes["nome"] = line.split()[1]
                     if line.startswith("State:"):
-                        detalhes["estado"] = line.split()[1]
+                        detalhes["estado"] = state_id_para_nome(line.split()[1])
                     if line.startswith("Uid:"):
                         uid = line.split()[1]
                         detalhes["usuario"] = uid_para_nome(uid)
@@ -75,7 +76,7 @@ class DetalhesProcesso:
                 tempo_sistema = int(campos[14])
                 total_t = tempo_usuario + tempo_sistema
                 
-                clk_tck = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
+                clk_tck = get_clk_tck()
                 detalhes["prioridade"] = prioridade
                 detalhes["cpu_s"] = total_t / clk_tck
 
@@ -84,8 +85,32 @@ class DetalhesProcesso:
             detalhes["cpu_s"] = 0.0
 
         # Porcentagem de CPU (simples, acumulado)
-        # Para %CPU real, seria necessário comparar com o tempo total do sistema em dois momentos
-        detalhes["cpu_percent"] = "N/A"  # Placeholder
+
+        detalhes["cpu_percent"] = self.calcular_cpu_percent(stat_path)
 
         self.detalhes = detalhes
         return detalhes
+    
+    def calcular_cpu_percent(self, stat_path):
+
+        try:
+            with open(stat_path, "r") as f:
+                campos = f.read().split()
+                tempo_usuario = int(campos[13])
+                tempo_sistema = int(campos[14])
+                total_t = tempo_usuario + tempo_sistema
+                start_time = int(campos[21])
+                clk_tck = get_clk_tck()
+                
+                with open("/proc/uptime", "r") as uf:
+                    uptime = float(uf.read().split()[0])
+
+                # Tempo de vida do processo em segundos
+                proc_seconds = uptime - (start_time / clk_tck)
+                if proc_seconds > 0:
+                    cpu_percent = 100 * ((total_t / clk_tck) / proc_seconds)
+                else:
+                    cpu_percent = 0.0
+            return round(cpu_percent, 2)
+        except Exception:
+            return "N/A"

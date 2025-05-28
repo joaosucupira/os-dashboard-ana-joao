@@ -9,7 +9,6 @@ class PrincipalController:
 
     def executar_tabela_processos(self):
         ProcessoController(self.view_p)
-
     
 
     def executar(self):

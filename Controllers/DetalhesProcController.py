@@ -19,7 +19,7 @@ class DetalhesProcController:
         while not self._detalhes:
             time.sleep(0.05)
 
-        self.view = DetalhesProcessoView(master=self.master, detalhes_dict=self._detalhes, threads_list=self._threads)
+        self.view = DetalhesProcessoView(master=self.master, detalhes_dict=self._detalhes, threads_list=self._threads, pid=self.pid)
         self.view.protocol("WM_DELETE_WINDOW", self.fechar)
         self.atualizar_interface()
 
