@@ -25,7 +25,8 @@ class TabelaProcessosView(ctk.CTkToplevel):
                 f"{proc['usuario'][:21]:<22}"
                 f"{proc['threads']:<10}"
                 f"{proc['estado']:<15}"
-                f"{proc['cpu_s']:<16}\n"
+                f"{proc['cpu_s']:<16}"
+                f"{proc['cpu_percent']:<16}\n"
             )
             self.tabela.insert("end", linha_texto)
 
@@ -40,6 +41,7 @@ class TabelaProcessosView(ctk.CTkToplevel):
             f"{'Threads':<10}"
             f"{'Estado':<15}"
             f"{'Tempo CPU(s)':<16}"
+            f"{'CPU(%)':<16}"
         )
         header = CTkLabel(
             self,

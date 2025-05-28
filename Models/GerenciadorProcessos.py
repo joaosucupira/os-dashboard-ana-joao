@@ -22,7 +22,7 @@ class GerenciadorProcessos:
 
                     try:
                         # Iterando stat
-                        name, estado_id, threads, t_cpu = self.ler_stat(stat_path, clk_tck)
+                        name, estado_id, threads, t_cpu, cpu_percent = self.ler_stat(stat_path, clk_tck)
                         # Iterando status
                         uid = self.ler_uid(status_path)
 
@@ -36,7 +36,8 @@ class GerenciadorProcessos:
                                 "usuario": usuario,
                                 "threads": threads,
                                 "estado": estado,
-                                "cpu_s": t_cpu
+                                "cpu_s": t_cpu,
+                                "cpu_percent": cpu_percent
                             })
                     except Exception:
                         continue # ignora todos os diretorios que nao sao processos
@@ -57,8 +58,9 @@ class GerenciadorProcessos:
             tempo_sistema = int(campos[14])
             total_t = tempo_usuario + tempo_sistema
             t_cpu = total_t / clk_tck
+            cpu_percent = self.calcular_cpu_percent(stat_path)
 
-        return name, estado_id, threads, t_cpu
+        return name, estado_id, threads, t_cpu, cpu_percent
 
     def ler_uid(self, status_path):
         with open(status_path, "r") as fstatus:
@@ -69,3 +71,27 @@ class GerenciadorProcessos:
                     break
         return uid
 
+    
+    def calcular_cpu_percent(self, stat_path):
+
+        try:
+            with open(stat_path, "r") as f:
+                campos = f.read().split()
+                tempo_usuario = int(campos[13])
+                tempo_sistema = int(campos[14])
+                total_t = tempo_usuario + tempo_sistema
+                start_time = int(campos[21])
+                clk_tck = get_clk_tck()
+                
+                with open("/proc/uptime", "r") as uf:
+                    uptime = float(uf.read().split()[0])
+
+                # Tempo de vida do processo em segundos
+                proc_seconds = uptime - (start_time / clk_tck)
+                if proc_seconds > 0:
+                    cpu_percent = 100 * ((total_t / clk_tck) / proc_seconds)
+                else:
+                    cpu_percent = 0.0
+            return round(cpu_percent, 2)
+        except Exception:
+            return "N/A"

@@ -1,12 +1,14 @@
 # Model especializado em coletar informações do processo especidigo atraves de seu identificador
 
 from utils.util_diretorio import GerenciadorDiretorio, uid_para_nome, get_clk_tck, state_id_para_nome
+from Models.GerenciadorProcessos import GerenciadorProcessos
 
 class DetalhesProcesso:
     def __init__(self, pid):
         self.pid = str(pid)
         self.proc_dir = f'/proc/{self.pid}'
         self.threads_info = []
+        self.gp = GerenciadorProcessos()
         
 
 
@@ -83,31 +85,8 @@ class DetalhesProcesso:
 
         # Porcentagem de CPU (simples, acumulado)
 
-        detalhes["cpu_percent"] = self.calcular_cpu_percent(stat_path)
+        detalhes["cpu_percent"] = self.gp.calcular_cpu_percent(stat_path)
 
         self.detalhes = detalhes
         return detalhes
     
-    def calcular_cpu_percent(self, stat_path):
-
-        try:
-            with open(stat_path, "r") as f:
-                campos = f.read().split()
-                tempo_usuario = int(campos[13])
-                tempo_sistema = int(campos[14])
-                total_t = tempo_usuario + tempo_sistema
-                start_time = int(campos[21])
-                clk_tck = get_clk_tck()
-                
-                with open("/proc/uptime", "r") as uf:
-                    uptime = float(uf.read().split()[0])
-
-                # Tempo de vida do processo em segundos
-                proc_seconds = uptime - (start_time / clk_tck)
-                if proc_seconds > 0:
-                    cpu_percent = 100 * ((total_t / clk_tck) / proc_seconds)
-                else:
-                    cpu_percent = 0.0
-            return round(cpu_percent, 2)
-        except Exception:
-            return "N/A"
