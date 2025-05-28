@@ -1,6 +1,9 @@
-from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck
+# Model especializado na coleta geral de processos de '/proc'
+
+from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck, uid_para_nome, state_id_para_nome
 
 class GerenciadorProcessos:
+    
     def listar_processos_e_usuarios(self):
         processos = []
         page_t = get_page_size()
@@ -9,35 +12,24 @@ class GerenciadorProcessos:
         with GerenciadorDiretorio("/proc") as gd:
             for entry in gd:
                 if entry.name.isdigit():
-
                     pid = entry.name
-                    stat_path = f"/proc/{pid}/stat"
+
+                    # caminho para acessar nome, estado, n de threads, tempo de cpu
+                    stat_path = f"/proc/{pid}/stat" 
+                    # caminho para acessar usuario do processo
                     status_path = f"/proc/{pid}/status"
+
+
                     try:
-                        
-                        with open(stat_path, "r") as fstat:
-                            campos = fstat.read().split()
-                            name = campos[1].strip("()")
-                            estado_id = campos[2]
-                            threads = int(campos[19])
-                            tempo_usuario = int(campos[13])
-                            tempo_sistema = int(campos[14])
-                            total_t = tempo_usuario + tempo_sistema
-                            t_cpu = total_t / clk_tck
-                            rss = int(campos[23])
-                            memoria_kb = (rss * page_t) // 1024
-                        
-                        with open(status_path, "r") as fstatus:
-                            uid = None
-                            for line in fstatus:
-                                if line.startswith("Uid:"):
-                                    uid = line.split()[1]
-                                    break
+                        # Iterando stat
+                        name, estado_id, threads, t_cpu, cpu_percent = self.ler_stat(stat_path, clk_tck)
+                        # Iterando status
+                        uid = self.ler_uid(status_path)
 
                         if uid is not None:
-                            usuario = self.uid_para_nome(uid)
-                            estado = self.state_id_para_nome(estado_id)
-
+                 
+                            usuario = uid_para_nome(uid)
+                            estado = state_id_para_nome(estado_id)
                             processos.append({
                                 "pid": pid,
                                 "nome": name,
@@ -45,40 +37,61 @@ class GerenciadorProcessos:
                                 "threads": threads,
                                 "estado": estado,
                                 "cpu_s": t_cpu,
-                                "mem_kb": memoria_kb
+                                "cpu_percent": cpu_percent
                             })
                     except Exception:
-                        continue
-        processos.sort(key=lambda p: int(p['mem_kb']), reverse=True)
-        return processos
+                        continue # ignora todos os diretorios que nao sao processos
 
-    # Conversão do unix ID para nome do usuário
-    def uid_para_nome(self, uid):
-        try:
-            with open("/etc/passwd", "r") as passwd_file:
-                for line in passwd_file:
-                    partes = line.split(":")
-                    if len(partes) > 2 and partes[2] == str(uid):
-                        return partes[0]
-        except Exception:
-            pass
-        return f"UID {uid}"
+        processos.sort(key=lambda p: (-p['cpu_s'], int(p['pid'])))        
+        # o retorno será utlizados pelo controller interessado
+        return processos 
     
-    def state_id_para_nome(self, state_id):
+    def ler_stat(self, stat_path, clk_tck):
 
-        estados = {
-            "R": "Executando",
-            "S": "Dormindo",
-            "D": "Travado",
-            "Z": "Zumbi",
-            "T": "Parado",
-            "t": "Parado (rastre.)",
-            "X": "Morto",
-            "x": "Morto",
-            "K": "Destruído",
-            "W": "Paginação",
-            "P": "Parado+",
-            "I": "Ocioso"
-        }
-        return estados.get(state_id, "Desconhecido")
+        # Campos referenciando os respectivos índices do arquivo inline que contém o que precisamos
+        with open(stat_path, "r") as fstat:
+            campos = fstat.read().split()
+            name = campos[1].strip("()")
+            estado_id = campos[2]
+            threads = int(campos[19])
+            tempo_usuario = int(campos[13])
+            tempo_sistema = int(campos[14])
+            total_t = tempo_usuario + tempo_sistema
+            t_cpu = total_t / clk_tck
+            cpu_percent = self.calcular_cpu_percent(stat_path)
 
+        return name, estado_id, threads, t_cpu, cpu_percent
+
+    def ler_uid(self, status_path):
+        with open(status_path, "r") as fstatus:
+            uid = None
+            for line in fstatus:
+                if line.startswith("Uid:"):
+                    uid = line.split()[1]
+                    break
+        return uid
+
+    
+    def calcular_cpu_percent(self, stat_path):
+
+        try:
+            with open(stat_path, "r") as f:
+                campos = f.read().split()
+                tempo_usuario = int(campos[13])
+                tempo_sistema = int(campos[14])
+                total_t = tempo_usuario + tempo_sistema
+                start_time = int(campos[21])
+                clk_tck = get_clk_tck()
+                
+                with open("/proc/uptime", "r") as uf:
+                    uptime = float(uf.read().split()[0])
+
+                # Tempo de vida do processo em segundos
+                proc_seconds = uptime - (start_time / clk_tck)
+                if proc_seconds > 0:
+                    cpu_percent = 100 * ((total_t / clk_tck) / proc_seconds)
+                else:
+                    cpu_percent = 0.0
+            return round(cpu_percent, 2)
+        except Exception:
+            return "N/A"

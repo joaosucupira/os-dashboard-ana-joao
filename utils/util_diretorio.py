@@ -1,12 +1,10 @@
-# Arquivo utilitario focado em manipulações de diretórios utilizando a bibliteca padrao C
+# Classes e módulos utilitários que auxiliam mais de um model do projeto em relação ao acesso 
+# dos diretórios de /proc
 
 import ctypes
-import ctypes.util
 from dataclasses import dataclass
 from typing import Iterator
 
-_SC_PAGESIZE = 30
-_SC_CLK_TCK = 2
 
 # Classe base que simula uma struct C que representa uma entrada de diretório.
 # Usada para interagir com o sistema de arquivos em nível de sistema operacional.
@@ -85,6 +83,12 @@ class GerenciadorDiretorio:
 
 # Funções uteis
 
+# Indices para parametro de sistemas da função c 'sysconf' para obter respectivamente
+# o tamanho da pagina e o clock ticks por segundo
+
+_SC_PAGESIZE = 30
+_SC_CLK_TCK = 2
+
 def get_page_size():
     libc = ctypes.CDLL(None)
     return libc.sysconf(_SC_PAGESIZE)
@@ -93,3 +97,31 @@ def get_clk_tck():
     libc = ctypes.CDLL(None)
     return libc.sysconf(_SC_CLK_TCK)
 
+def uid_para_nome(uid):
+    try:
+        with open("/etc/passwd", "r") as passwd_file:
+            for line in passwd_file:
+                partes = line.split(":")
+                if len(partes) > 2 and partes[2] == str(uid):
+                    return partes[0]
+    except Exception:
+        pass
+    return f"UID {uid}"
+
+def state_id_para_nome(state_id):
+    estados = {
+        "R": "Executando",
+        "S": "Dormindo",
+        "D": "Travado",
+        "Z": "Zumbi",
+        "T": "Parado",
+        "t": "Parado (rastre.)",
+        "X": "Morto",
+        "x": "Morto",
+        "K": "Destruído",
+        "W": "Paginação",
+        "P": "Parado+",
+        "I": "Ocioso"
+    }
+    # Pode ocorrer do estado Dormindo ser interpretado incorretamente, verifique o estado no proprio proc
+    return estados.get(state_id, "Desconhecido")
