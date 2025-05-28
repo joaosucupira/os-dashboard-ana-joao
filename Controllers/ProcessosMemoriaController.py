@@ -1,10 +1,11 @@
 from Models.GerenciadorProcessosMemoria import GerenciadorProcessosMemoria
 from Views.TabelaProcessosMemoriaView import TabelaProcessosMemoriaView
+from Controllers.DetalhesMemoriaController import DetalhesMemoriaController
 
 class ProcessosMemoriaController:
     def __init__(self, master):
         self.model = GerenciadorProcessosMemoria()
-        self.view = TabelaProcessosMemoriaView(master=master)
+        self.view = TabelaProcessosMemoriaView(master=master, callback_acao_linha=self.abrir_detalhes_processo)
         self.atualizar_tabela_processos_memoria()
 
     def atualizar_tabela_processos_memoria(self):
@@ -14,3 +15,7 @@ class ProcessosMemoriaController:
     def mostrar(self):
         self.view.deiconify()
         self.atualizar_tabela_memoria()
+
+    def abrir_detalhes_processo(self, proc):
+        pid = proc['pid']
+        DetalhesMemoriaController(pid, self.view)
