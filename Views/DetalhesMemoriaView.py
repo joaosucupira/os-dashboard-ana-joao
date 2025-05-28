@@ -15,11 +15,10 @@ class DetalhesMemoriaView(ctk.CTkToplevel):
             f"Nome: {detalhes_dict.get('nome', '?')}\n"
             f"Usuário: {detalhes_dict.get('usuario', '?')}\n"
             f"Estado: {detalhes_dict.get('estado', '?')}\n"
-            f"Memória Física Total (RAM): {detalhes_dict.get('mem_fis_tot', '?')} KB\n"
-            f"Memória Residente (RSS): {detalhes_dict.get('rss', '?')} KB\n"
-            f"Memória Virtual Total (SWAP): {detalhes_dict.get('mem_vir_tot', '?')} KB\n"
-            f"Memória Compartilhável: {detalhes_dict.get('mem_compartilhavel', '?')} KB\n"
-            f"Memória Gravável: {detalhes_dict.get('mem_gravavel', '?')} KB\n"
+            f"Memória Física Total (RAM): {detalhes_dict.get('mem_fis_tot', '?')} GB\n"
+            f"Memória Residente (RSS): {detalhes_dict.get('rss', '?')} MB\n"
+            f"Memória Virtual Total (SWAP): {detalhes_dict.get('mem_vir_tot', '?')} GB\n"
+            f"Memória Compartilhável: {detalhes_dict.get('mem_compartilhavel', '?')} MB\n"
         )
         CTkLabel(frame_detalhes, text=texto, font=("Arial", 14), anchor="w", justify="left").pack(anchor="w")
 

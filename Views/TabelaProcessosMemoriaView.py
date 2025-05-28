@@ -12,6 +12,7 @@ class TabelaProcessosMemoriaView(ctk.CTkToplevel):
         # Adicione aqui o restante da implementação da tabela de processos de memória
 
     def mostrar_processos(self, processos):
+        print("Mostrando processos na tabela de memória")
         self.processos_atuais = list(processos)
         scroll_pos = self.tabela.yview()
         self.tabela.configure(state="normal")

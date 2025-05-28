@@ -23,7 +23,6 @@ class GerenciadorProcessosMemoria:
                     # Armazena o PID e os caminhos para os arquivos stat e status do processo
                     pid = entry.name
                     status_path = f"/proc/{pid}/status"
-                    smaps_rollup_path = f"/proc/{pid}/smaps_rollup"
                     smaps_path = f"/proc/{pid}/smaps"
                     
                     # Try exception para abertura dos arquivos stat e status
