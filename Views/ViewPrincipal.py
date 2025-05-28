@@ -19,8 +19,3 @@ class ViewPrincipal(ctk.CTk):
         # memoria
         self.btn_memoria = CTkButton(self, text="Ver Informacoes de Memoria", command=abrir_memoria_callback)
         self.btn_memoria.pack(pady=10)
-
-
-    def outra_funcionalidade(self):
-        # Implemente aqui outras funcionalidades conforme os requisitos
-        pass

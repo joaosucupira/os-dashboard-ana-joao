@@ -30,3 +30,12 @@ class GerenciadorCPU:
         processos = gp.listar_processos_e_usuarios()
         total_threads = sum(p['threads'] for p in processos)
         return len(processos), total_threads
+    
+    def obter_uptime(self):
+        try:
+            with open('/proc/uptime') as f:
+                uptime_seconds = float(f.readline().split()[0])
+            return uptime_seconds
+            
+        except Exception:
+            return 0.0
