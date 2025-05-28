@@ -7,7 +7,7 @@ class ViewPrincipal(ctk.CTk):
     def __init__(self, abrir_tabela_callback, abrir_memoria_callback):
         super().__init__()
         self.title("Stich Dashboard - Tela inicial")
-        self.geometry("1100x500")
+        self.geometry("500x300")
 
         self.label = CTkLabel(self, text="Bem-vindo ao Stitch Dashboard", font=("Arial", 18, "bold"))
         self.label.pack(pady=(30, 20))
