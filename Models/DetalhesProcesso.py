@@ -11,13 +11,13 @@ class DetalhesProcesso:
         self.gp = GerenciadorProcessos()
         
 
-
+    # Carregamento das threads daquele processo em especifico
     def carregar_threads(self):
         task_dir = f'{self.proc_dir}/task'
         with GerenciadorDiretorio(task_dir) as gd:
             for entry in gd:
                 tid = entry.name
-
+                # ignorando diretorios que nao sao processos
                 if tid == "." or tid == ".." : continue 
 
                 thread_info = {"tid": tid}
@@ -66,7 +66,7 @@ class DetalhesProcesso:
             detalhes["usuario"] = "?"
             detalhes["threads"] = 0
 
-        # Prioridade e tempo de CPU
+        # prioridade e tempo de CPU
         try:
             with open(stat_path, "r") as f:
                 campos = f.read().split()
@@ -83,7 +83,7 @@ class DetalhesProcesso:
             detalhes["prioridade"] = "?"
             detalhes["cpu_s"] = 0.0
 
-        # Porcentagem de CPU (simples, acumulado)
+        # porcentagem de CPU (simples, acumulado)
 
         detalhes["cpu_percent"] = self.gp.calcular_cpu_percent(stat_path)
 

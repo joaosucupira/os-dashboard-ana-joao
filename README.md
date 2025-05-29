@@ -12,6 +12,9 @@ João Antonio Teixeira Sucupira
 
 **Instruções**
 
+*0. Caso você esteja acessando os arquivos fora da estrutura de pastas, acesse o seguinte repositório para guiar-se:*
+https://github.com/joaosucupira/os-dashboard-ana-joao
+
 *1. Obter as bibliotecas*
 Rode 'source venv/bin/activate'
 Rode 'pip install -r requirements.txt'

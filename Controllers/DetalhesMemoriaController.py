@@ -8,6 +8,8 @@ class DetalhesMemoriaController:
     def __init__(self, pid, master):
         self.pid = pid
         self.master = master
+
+        # Instancia do model que puxa os dados de memoria
         self.model = GerenciadorDetalhesMemoria(pid) # Solicita os detalhes do processo identificado por pid
         self._stop_event = threading.Event()  # Evento para sinalizar parada da thread
         self._lock = threading.Lock()         # Lock para acesso seguro aos dados compartilhados
@@ -33,6 +35,7 @@ class DetalhesMemoriaController:
                 self._threads = threads
             time.sleep(1)  # Atualiza a cada 1 segundo
 
+    # Atualização da inferface verificando se a janela está mesmo aberta, respeitando o semaforo e definindo um intervalo justo
     def atualizar_interface(self):
         # Atualiza a interface gráfica com os dados mais recentes
         with self._lock:
