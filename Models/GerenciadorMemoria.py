@@ -1,13 +1,6 @@
 class GerenciadorMemoria:
     
     def __init__(self):
-        """
-        Inicializa o gerenciador de memória.
-        """
-        # Leitura do arquivo /proc/meminfo
-        with open("/proc/meminfo", "r") as f:
-            linhas = f.readlines()
-
         self.mem_total = 0
         self.mem_free = 0
         self.mem_available = 0

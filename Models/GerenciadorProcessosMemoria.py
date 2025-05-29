@@ -1,4 +1,4 @@
-from utils.util_diretorio import GerenciadorDiretorio, get_page_size, get_clk_tck
+from utils.util_diretorio import GerenciadorDiretorio
 import os
 
 class GerenciadorProcessosMemoria:
@@ -7,7 +7,7 @@ class GerenciadorProcessosMemoria:
         # onde cada dicionario contem as informacoes de um processo.
         processos = []
 
-        # Tamanho da pagina e clock ticks por segundo (precisa estudar melhor isso)
+        # Tamanho da pagina em kilobytes
         page_t = os.sysconf('SC_PAGE_SIZE') // 1024
 
         
@@ -23,7 +23,6 @@ class GerenciadorProcessosMemoria:
                     # Armazena o PID e os caminhos para os arquivos stat e status do processo
                     pid = entry.name
                     status_path = f"/proc/{pid}/status"
-                    smaps_path = f"/proc/{pid}/smaps"
                     
                     # Try exception para abertura dos arquivos stat e status
                     try:
