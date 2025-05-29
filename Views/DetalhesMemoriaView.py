@@ -15,10 +15,10 @@ class DetalhesMemoriaView(ctk.CTkToplevel):
             f"Nome: {detalhes_dict.get('nome', '?')}\n"
             f"Usuário: {detalhes_dict.get('usuario', '?')}\n"
             f"Estado: {detalhes_dict.get('estado', '?')}\n"
-            f"Memória Física Total (RAM): {detalhes_dict.get('mem_fis_tot', '?')} GB\n"
-            f"Memória Residente (RSS): {detalhes_dict.get('rss', '?')} MB\n"
-            f"Memória Virtual Total (SWAP): {detalhes_dict.get('mem_vir_tot', '?')} GB\n"
-            f"Memória Compartilhável: {detalhes_dict.get('mem_compartilhavel', '?')} MB\n"
+            f"Memória Física Total (RAM): {detalhes_dict.get('mem_fis_tot', '?'):.2f} GB\n"
+            f"Memória Residente (RSS): {detalhes_dict.get('rss', '?'):.2f} MB\n"
+            f"Memória Virtual Total (SWAP): {detalhes_dict.get('mem_vir_tot', '?'):.2f} GB\n"
+            f"Memória Compartilhável: {detalhes_dict.get('mem_compartilhavel', '?'):.2f} MB\n"
         )
         CTkLabel(frame_detalhes, text=texto, font=("Arial", 14), anchor="w", justify="left").pack(anchor="w")
 
@@ -29,10 +29,10 @@ class DetalhesMemoriaView(ctk.CTkToplevel):
         threads_box = CTkTextbox(frame_threads, width=640, height=300, font=("Courier New", 12))
         threads_box.pack(fill="both", expand=True)
 
-        header = f"{'TID':<10}{'ESTADO':<15}{'NOME':<25}\n"
+        header = f"{'TID':<10}{'ESTADO':<15}{'NOME':<25}{'MEMORIA (kB)':15}\n"
         threads_box.insert("end", header)
-        threads_box.insert("end", "="*50 + "\n")
+        threads_box.insert("end", "="*70 + "\n")
 
         for t in threads_list:
-            threads_box.insert("end", f"{t.get('tid','?'):<10}{t.get('state','?'):<15}{t.get('name','?'):<25}\n")
+            threads_box.insert("end", f"{t.get('tid','?'):<10}{t.get('state','?'):<15}{t.get('name','?'):<25}{t.get('vm_stack','?'):<15}\n")
         threads_box.configure(state="disabled")
