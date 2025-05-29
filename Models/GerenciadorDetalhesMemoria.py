@@ -29,10 +29,13 @@ class GerenciadorDetalhesMemoria:
                                 thread_info["name"] = line.split()[1]
                             if line.startswith("State:"):
                                 thread_info["state"] = state_id_para_nome(line.split()[1])
+                            if line.startswith("VmStk:"):
+                                thread_info["vm_stack"] = int(line.split()[1])
 
                 except Exception:
                     thread_info["name"] = "?"
                     thread_info["state"] = "?"
+                    thread_info["vm_stack"] = 0
 
                 self.threads_info.append(thread_info)
 
