@@ -16,7 +16,7 @@ class GerenciadorMemoria:
         self.cached = 0
         
         self.dados_memoria = {}
-        self.dados_memoria = self.atualizaDados()
+        self.dados_memoria = self.atualizaDados()  # Inicializa os dados de memória
 
     # Obs: colocar isso aqui em uma thread la no controler
     def atualizaDados(self):
@@ -24,6 +24,7 @@ class GerenciadorMemoria:
         with open("/proc/meminfo", "r") as f:
             linhas = f.readlines()
 
+        # Percorre cada linha do arquivo para extrair os valores necessários
         for linha in linhas:
             if "MemTotal" in linha:
                 self.mem_total = int(linha.split()[1]) / (1024*1024)  # Convertendo de kB para GB
@@ -99,3 +100,4 @@ class GerenciadorMemoria:
             return percentual_memoria_virtual_usada
         
         return 0.0
+

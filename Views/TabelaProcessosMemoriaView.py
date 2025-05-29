@@ -3,16 +3,16 @@ from customtkinter import CTkLabel, CTkButton, CTkTextbox
 
 class TabelaProcessosMemoriaView(ctk.CTkToplevel):
     def __init__(self, master=None, callback_acao_linha=None):
+        # Inicializa a janela e configurações iniciais
         super().__init__(master=master)
         self.title("Tabela de Processos")
         self.geometry("1300x520")
         self.monta_tabela()
         self.processos_atuais = []
         self.callback_acao_linha = callback_acao_linha
-        # Adicione aqui o restante da implementação da tabela de processos de memória
 
     def mostrar_processos(self, processos):
-        print("Mostrando processos na tabela de memória")
+        # Atualiza a tabela com a lista de processos recebida
         self.processos_atuais = list(processos)
         scroll_pos = self.tabela.yview()
         self.tabela.configure(state="normal")
@@ -60,6 +60,7 @@ class TabelaProcessosMemoriaView(ctk.CTkToplevel):
         return header
 
     def monta_tabela(self):
+        # Monta o cabeçalho e a área da tabela
         self.header = self.monta_header()
         self.header.pack(fill="x", padx=10, pady=(0, 10))
 

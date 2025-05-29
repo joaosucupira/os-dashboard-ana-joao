@@ -4,7 +4,7 @@ from customtkinter import CTkLabel, CTkButton
 class TabelaMemoriaView(ctk.CTkToplevel):
     def __init__(self, master=None, abrir_tabela_processos_memoria_callback=None):
         super().__init__(master=master)
-        self.monta_tabela()
+        self.monta_tabela()  # Monta a interface da tabela
 
         # Botão para abrir a tabela de processos de memória
         self.btn_tabela_processos = CTkButton(
@@ -15,6 +15,7 @@ class TabelaMemoriaView(ctk.CTkToplevel):
         self.btn_tabela_processos.pack(pady=10)
 
     def monta_header(self):
+        # Cria o cabeçalho da tabela
         header_text = (
             "Resumo do Uso de Memória\n"
         )
@@ -31,6 +32,7 @@ class TabelaMemoriaView(ctk.CTkToplevel):
         return header
 
     def monta_tabela(self):
+        # Configura a janela e adiciona o cabeçalho e a área de texto
         self.title("Memória do Sistema")
         self.geometry("900x600")
         self.header = self.monta_header()
@@ -39,6 +41,7 @@ class TabelaMemoriaView(ctk.CTkToplevel):
         self.tabela.pack(fill="both", expand=True, padx=10, pady=(0, 0))
 
     def mostrar_memoria(self, dados_memoria):
+        # Exibe os dados de memória na tabela
         self.tabela.delete("0.0", "end")
         linhas = [
             f"Memória Física (RAM):\n",

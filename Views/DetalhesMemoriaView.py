@@ -8,9 +8,11 @@ class DetalhesMemoriaView(ctk.CTkToplevel):
         self.geometry("700x500")
         self.resizable(False, True)
 
+        # Cria o frame para os detalhes do processo
         frame_detalhes = CTkFrame(self)
         frame_detalhes.pack(fill="x", padx=20, pady=(20, 10))
 
+        # Monta o texto com os detalhes de memória do processo
         texto = (
             f"Nome: {detalhes_dict.get('nome', '?')}\n"
             f"Usuário: {detalhes_dict.get('usuario', '?')}\n"
@@ -22,17 +24,19 @@ class DetalhesMemoriaView(ctk.CTkToplevel):
         )
         CTkLabel(frame_detalhes, text=texto, font=("Arial", 14), anchor="w", justify="left").pack(anchor="w")
 
-        # Threads
+        # Cria o frame para exibir as threads do processo
         frame_threads = CTkFrame(self)
         frame_threads.pack(fill="both", expand=True, padx=20, pady=(10, 20))
         CTkLabel(frame_threads, text="Threads:", font=("Arial", 14, "bold"), anchor="w").pack(anchor="w")
         threads_box = CTkTextbox(frame_threads, width=640, height=300, font=("Courier New", 12))
         threads_box.pack(fill="both", expand=True)
 
+        # Cabeçalho da tabela de threads
         header = f"{'TID':<10}{'ESTADO':<15}{'NOME':<25}{'MEMORIA (kB)':15}\n"
         threads_box.insert("end", header)
         threads_box.insert("end", "="*70 + "\n")
 
+        # Insere os dados das threads na tabela
         for t in threads_list:
             threads_box.insert("end", f"{t.get('tid','?'):<10}{t.get('state','?'):<15}{t.get('name','?'):<25}{t.get('vm_stack','?'):<15}\n")
         threads_box.configure(state="disabled")

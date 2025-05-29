@@ -70,7 +70,6 @@ class GerenciadorProcessosMemoria:
                                 "stack_paginas": pags_stack
                             })
                     except Exception as e:
-                        print(f"Erro ao processar PID {pid}: {e}")
                         continue
 
         # Ordena os processos pela quantidade de memória alocada em ordem decrescente

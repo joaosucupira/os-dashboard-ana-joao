@@ -1,17 +1,16 @@
 import os
 from utils.util_diretorio import GerenciadorDiretorio, uid_para_nome, state_id_para_nome
 
-
 class GerenciadorDetalhesMemoria:
     def __init__(self, pid):
         self.pid = str(pid)
         self.proc_dir = f'/proc/{self.pid}'
         self.threads_info = []
-        
-
+        # Inicializa o gerenciador com o PID e diretório do processo
 
     def carregar_threads(self):
         task_dir = f'{self.proc_dir}/task'
+        # Abre o diretório de threads do processo
         with GerenciadorDiretorio(task_dir) as gd:
             for entry in gd:
                 tid = entry.name
@@ -24,7 +23,7 @@ class GerenciadorDetalhesMemoria:
                 try:
                     with open(status_path, "r") as f:
                         for line in f:
-
+                            # Extrai informações da thread do arquivo status
                             if line.startswith("Name:"):
                                 thread_info["name"] = line.split()[1]
                             if line.startswith("State:"):
@@ -38,9 +37,11 @@ class GerenciadorDetalhesMemoria:
                     thread_info["vm_stack"] = 0
 
                 self.threads_info.append(thread_info)
+                # Adiciona informações da thread à lista
 
     def get_info_threads(self): 
         return self.threads_info
+        # Retorna informações das threads
     
     def carregar_detalhes_processo(self):
         self.carregar_threads()
@@ -71,8 +72,6 @@ class GerenciadorDetalhesMemoria:
                     if line.startswith("RssShmem"):
                         detalhes["mem_compartilhavel"] += int(line.split()[1]) / 1024
 
-
-                    
         except Exception:
             detalhes["nome"] = "?"
             detalhes["estado"] = "?"
@@ -84,3 +83,4 @@ class GerenciadorDetalhesMemoria:
 
         self.detalhes = detalhes
         return detalhes
+        # Retorna detalhes do processo
