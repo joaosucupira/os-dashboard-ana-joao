@@ -8,7 +8,7 @@ class GerenciadorProcessosMemoria:
         processos = []
 
         # Tamanho da pagina e clock ticks por segundo (precisa estudar melhor isso)
-        page_t = os.sysconf('SC_PAGE_SIZE')
+        page_t = os.sysconf('SC_PAGE_SIZE') // 1024
 
         
         # Abre o gerenciador de diretorio para acessar o diretorio /proc
@@ -27,21 +27,6 @@ class GerenciadorProcessosMemoria:
                     
                     # Try exception para abertura dos arquivos stat e status
                     try:
-                        
-                        # Dados a serem lidos:
-                        # - PID, // status
-                        # - nome do processo, //status
-                        # - usuario, // definido no 2o with, mas eh no status
-                        # - quantidade total de memória alocada,  //smaps_rollup -> Pss (ideal) ou status -> VmRSS
-                        # - quantidade de páginas de memória( //smap
-                            # - total, //smaps_rollup -> Rss (ideal) (em kB, precisa ser convertido p/ qtdd. de pags.)
-                            # - de código, // smaps -> para cada VMA do processo que eh executavel e com permissao de execucao
-                            #              // somar o valor do campo Pss e converter de kB para quantidade de paginas
-                            # - heap, // smaps -> para cada VMA do processo que eh identificado como [heap] 
-                            #         // somar o valor do campo Pss e converter de kB para quantidade de paginas
-                            # - stack // smaps -> para cada VMA do processo que eh identificado como [heap] 
-                            #         // somar o valor do campo Pss e converter de kB para quantidade de paginas
-                        # )
 
                         # Acessa o arquivo status para obter o nome do processo e o UID
                         # que sera convertido para o nome do usuario
@@ -49,70 +34,27 @@ class GerenciadorProcessosMemoria:
                             linhas = fstatus.readlines()
                             name = None
                             uid = None
-                            
+                            mem_alocada = 0
+                            mem_alocada_pags = 0
+                            pags_cod = 0
+                            pags_stack = 0
+                            pags_heap = 0
 
                             for line in linhas:
                                 if line.startswith("Name:"):
                                     name = line.split()[1].strip("()")
                                 elif line.startswith("Uid:"):
                                     uid = line.split()[1]
+                                elif line.startswith("VmSize"):
+                                    mem_alocada = int(line.split()[1])
+                                    mem_alocada_pags = int(line.split()[1]) // (page_t)
+                                elif line.startswith("VmExe"):
+                                    pags_cod = int(line.split()[1]) // (page_t)
+                                elif line.startswith("VmData"):
+                                    pags_heap = int(line.split()[1]) // (page_t)
+                                elif line.startswith("VmStk"):
+                                    pags_stack = int(line.split()[1]) // (page_t)
             
-
-                        # Acessa o arquivo smaps_rollup para obter
-                        # a quantidade total de memória alocada e a quantidade total de páginas de memoria
-                        # with open(smaps_rollup_path, "r") as fsmaps_rollup:
-                        #     linhas = fsmaps_rollup.readlines()
-                            
-                        #     for line in linhas:
-                        #         if line.startswith("Size:"):
-                        #             size = int(line.split()[1])
-
-                        # Acessa o arquivo smaps para obter quantidade de páginas de memória alocada, de heap e de stack
-                        # Percorrendo todos os VMAs do processo em questao
-                            # VMA = mapeamentos de memória virtual (VMAs - Virtual Memory Areas)
-                            # Os processos tem varias areas de memoria virtual, cada uma com suas caracteristicas
-                            # e permissões, como código executável, heap, stack, etc.
-    
-                        with open(smaps_path, "r") as fsmaps:
-                            linhas = fsmaps.readlines()
-                            size = 0
-                            code_pages = 0
-                            heap_pages = 0
-                            stack_pages = 0
-                            current_vma = None  # Variável para rastrear a VMA atual
-
-                            for line in linhas:
-                                campos = line.split()
-                                # Transforma a linha em uma lista de campos
-                                
-                                # Analisa o segundo campo da linha que corresponde as permissões da VMA
-                                if len(campos) > 1 and "x" in campos[1]:
-                                    # Se a VMA tem permissão de execução, soma as páginas de código
-                                    current_vma = "code"
-
-                                elif "[heap]" in line:
-                                    # Se a linha contém [heap], indica o início da área de heap
-                                    current_vma = "heap"
-
-                                elif "[stack]" in line:
-                                    # Se a linha contém [stack], indica o início da área de stack
-                                    current_vma = "stack"
-
-                                elif current_vma == "code" and line.startswith("Size:"):
-                                    # Se a linha contém Pss e estamos na área de código, soma a memoria de código
-                                    code_pages += int(line.split()[1])
-
-                                elif current_vma == "heap" and line.startswith("Size:"):
-                                    # Se a linha contém Pss e estamos na área de heap, soma a memoria de heap
-                                    heap_pages += int(line.split()[1])
-
-                                elif current_vma == "stack" and line.startswith("Size:"):
-                                    # Se a linha contém Pss e estamos na área de stack, soma a memoria de stack
-                                    stack_pages += int(line.split()[1])
-
-                                elif line.startswith("Size:"):
-                                    # Se a linha contém Size, indica o tamanho total da memória alocada
-                                    size += int(line.split()[1])
 
                         if uid is not None:
                             usuario = self.uid_para_nome(uid)
@@ -121,11 +63,11 @@ class GerenciadorProcessosMemoria:
                                 "pid": pid,
                                 "nome": name,
                                 "usuario": usuario,
-                                "memoria_alocada_kb": size,
-                                "memoria_alocada_paginas": size // page_t,
-                                "codigo_paginas": code_pages // page_t,
-                                "heap_paginas": heap_pages // page_t,
-                                "stack_paginas": stack_pages // page_t
+                                "memoria_alocada_kb": mem_alocada,
+                                "memoria_alocada_paginas": mem_alocada_pags,
+                                "codigo_paginas": pags_cod,
+                                "heap_paginas": pags_heap,
+                                "stack_paginas": pags_stack
                             })
                     except Exception as e:
                         print(f"Erro ao processar PID {pid}: {e}")
