@@ -35,6 +35,8 @@ class ProcessoController:
         except Exception:
             pass
 
+    # Módulo da inicialização do controller: prepara botao, cliques de linha parac selecionar processo e thread
+    # para rodar a rotina paralelamente
     def inicializa(self, master):
         self.model = GerenciadorProcessos()
         self.view = TabelaProcessosView(master=master, callback_acao_linha=self.abrir_detalhes_processo, callback_resumo_cpu=self.abrir_info_global)

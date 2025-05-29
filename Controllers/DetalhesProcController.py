@@ -10,6 +10,8 @@ class DetalhesProcController:
         self.master = master
         self.model = DetalhesProcesso(pid)
         self._stop_event = threading.Event()
+
+        # Criação da threads voltada para exibir os detalhes do processo
         self._lock = threading.Lock()
         self._detalhes = {}
         self._threads = []

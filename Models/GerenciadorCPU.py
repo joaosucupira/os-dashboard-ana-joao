@@ -7,7 +7,7 @@ class GerenciadorCPU:
     def __init__(self):
         self.last_total = 0
         self.last_idle = 0
-
+    # modulos que coletam inforamção sobre a cpu
     def ler_cpu(self):
         with open("/proc/stat") as f:
             campos = f.readline().split()
@@ -25,6 +25,7 @@ class GerenciadorCPU:
         ocioso = 100 * idle_diff / total_diff if total_diff else 0
         return round(uso, 2), round(ocioso, 2)
 
+    # contagem threads, processos e tempo ligado
     def contar_processos_threads(self):
         gp = GerenciadorProcessos()
         processos = gp.listar_processos_e_usuarios()

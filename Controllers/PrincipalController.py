@@ -7,7 +7,7 @@ class PrincipalController:
     def __init__(self):
         self.view_p = ViewPrincipal(self.executar_tabela_processos, self.executar_tabela_memoria)
 
-
+    # chama o controler dos processos e cpu
     def executar_tabela_processos(self):
         ProcessoController(self.view_p)
 
