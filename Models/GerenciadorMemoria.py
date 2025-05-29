@@ -26,17 +26,17 @@ class GerenciadorMemoria:
 
         for linha in linhas:
             if "MemTotal" in linha:
-                self.mem_total = int(linha.split()[1]) / 1000000
+                self.mem_total = int(linha.split()[1]) / (1024*1024)  # Convertendo de kB para GB
             elif "MemFree" in linha:
-                self.mem_free = int(linha.split()[1]) / 1000000
+                self.mem_free = int(linha.split()[1]) / (1024*1024)  # Convertendo de kB para GB
             elif "MemAvailable" in linha:
-                self.mem_available = int(linha.split()[1]) / 1000000
+                self.mem_available = int(linha.split()[1]) / (1024*1024)  # Convertendo de kB para GB
             elif "SwapTotal" in linha:
-                self.swap_total = int(linha.split()[1]) / 1000000
+                self.swap_total = int(linha.split()[1]) / (1024*1024)  # Convertendo de kB para GB
             elif "SwapFree" in linha:
-                self.swap_free = int(linha.split()[1]) / 1000000
-            elif "Cached" in linha:
-                self.cached = int(linha.split()[1]) / 1000000
+                self.swap_free = int(linha.split()[1]) / (1024*1024)  # Convertendo de kB para GB
+            elif linha.startswith("Cached:"):
+                self.cached = int(linha.split()[1]) / (1024*1024)  # Convertendo de kB para GB
 
         # Dicionario contendo apenas os dados que serao mostrados em tela
         # Para memória física (RAM) e virtual (SWAP):
