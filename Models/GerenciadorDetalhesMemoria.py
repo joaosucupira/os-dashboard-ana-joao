@@ -43,7 +43,6 @@ class GerenciadorDetalhesMemoria:
         self.carregar_threads()
         detalhes = {}
         status_path = f"{self.proc_dir}/status"
-        #smaps_path = f"{self.proc_dir}/smaps"
 
         detalhes["mem_compartilhavel"] = 0
 
@@ -58,16 +57,16 @@ class GerenciadorDetalhesMemoria:
                     if line.startswith("Uid:"):
                         uid = line.split()[1]
                         detalhes["usuario"] = uid_para_nome(uid)
-                    if line.startswith("VmSize:"):
-                        detalhes["mem_fis_tot"] = int(line.split()[1]) / 1000000 # mB
+                    if line.startswith("RssAnon:"):
+                        detalhes["mem_fis_tot"] = int(line.split()[1]) / 1024 # mB
                     if line.startswith("VmSize"):
-                        detalhes["mem_vir_tot"] = int(line.split()[1]) / 1000000 # GB
+                        detalhes["mem_vir_tot"] = int(line.split()[1]) / (1024*1024) # GB
                     if line.startswith("VmRSS:"):
-                        detalhes["rss"] = int(line.split()[1]) / 1000 # mB
+                        detalhes["rss"] = int(line.split()[1]) / 1024 # mB
                     if line.startswith("RssFile"):
-                        detalhes["mem_compartilhavel"] += int(line.split()[1]) / 1000
+                        detalhes["mem_compartilhavel"] += int(line.split()[1]) / 1024
                     if line.startswith("RssShmem"):
-                        detalhes["mem_compartilhavel"] += int(line.split()[1]) / 1000
+                        detalhes["mem_compartilhavel"] += int(line.split()[1]) / 1024
 
 
                     
@@ -79,53 +78,6 @@ class GerenciadorDetalhesMemoria:
             detalhes["mem_vir_tot"] = 0
             detalhes["rss"] = 0 
             detalhes["mem_compartilhavel"] = 0 
-
-        # # Informações de memória
-        # try:
-        #     with open(smaps_path, "r") as fsmaps:
-        #         linhas = fsmaps.readlines()
-        #         writable = False
-        #         size = 0
-        #         rss = 0
-        #         swap = 0
-        #         shared_clean = 0
-        #         shared_dirty = 0
-        #         writable_mem = 0
-
-        #         for line in linhas:
-        #             campos = line.split()
-
-        #             if len(campos) > 1 and "w" in campos[1]:
-        #                 writable = True
-                        
-        #             if line.startswith("Size:"):
-        #                 size += int(line.split()[1])
-
-        #                 if writable:
-        #                     writable_mem += int(line.split()[1])
-
-        #             elif line.startswith("Rss:"):
-        #                 rss += int(line.split()[1])
-        #             elif line.startswith("Swap:"):
-        #                 swap += int(line.split()[1])
-        #             elif line.startswith("Shared_Clean:"):
-        #                 shared_clean += int(line.split()[1])
-        #             elif line.startswith("Shared_Dirty:"):
-        #                 shared_dirty += int(line.split()[1])
-
-        #         detalhes["mem_fis_tot"] = size/1000 # Memoria fisica total
-        #         detalhes["rss"] = rss/1000 # Memoria fisica residente (memoria realmente utilizada)
-        #         detalhes["mem_vir_tot"] = swap/1000 # Memoria virtual
-        #         detalhes["mem_compartilhavel"] = (shared_clean + shared_dirty)/1000 
-        #         detalhes["mem_gravavel"] = writable_mem/1000 # Memoria gravavel
-
-
-        # except Exception:
-        #     detalhes["mem_fis_tot"] = 0 
-        #     detalhes["rss"] = 0 
-        #     detalhes["mem_vir_tot"] = 0 
-        #     detalhes["mem_compartilhavel"] = 0 
-        #     detalhes["mem_gravavel"] = 0 
 
         self.detalhes = detalhes
         return detalhes
