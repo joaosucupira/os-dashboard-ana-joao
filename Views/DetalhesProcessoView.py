@@ -10,24 +10,14 @@ class DetalhesProcessoView(ctk.CTkToplevel):
         self.geometry("700x650")
         self.resizable(False, True)
 
-        frame_detalhes = CTkFrame(self)
-        frame_detalhes.pack(fill="x", padx=20, pady=(20, 10))
+        frame_top = CTkFrame(self)
+        frame_top.pack(fill="x", padx=20, pady=(20, 10))
 
-        texto = (
-            f"Nome: {detalhes_dict.get('nome', '?')}\n"
-            f"Usuário: {detalhes_dict.get('usuario', '?')}\n"
-            f"Estado: {detalhes_dict.get('estado', '?')}\n"
-            f"Prioridade: {detalhes_dict.get('prioridade', '?')}\n"
-            f"Threads: {detalhes_dict.get('threads', '?')}\n"
-            f"Tempo CPU (s): {detalhes_dict.get('cpu_s', '?')}\n"
-            f"%CPU: {detalhes_dict.get('cpu_percent', '?')}\n"
-        )
-        CTkLabel(frame_detalhes, text=texto, font=("Arial", 14), anchor="w", justify="left").pack(anchor="w")
+        frame_grafico = CTkFrame(frame_top)
+        frame_grafico.pack(side="left", fill="y", padx=(0, 20))
 
-        # Gráfico de pizza do uso de CPU
-        frame_grafico = CTkFrame(self)
-        frame_grafico.pack(fill="x", padx=20, pady=(0, 10))
         cpu_percent = detalhes_dict.get('cpu_percent', 0)
+
         try:
             cpu_percent = float(cpu_percent)
         except Exception:
@@ -40,7 +30,20 @@ class DetalhesProcessoView(ctk.CTkToplevel):
         canvas.get_tk_widget().pack()
         plt.close(fig)
 
-        # Threads
+        frame_detalhes = CTkFrame(frame_top)
+        frame_detalhes.pack(side="left", fill="both", expand=True)
+
+        texto = (
+            f"Nome: {detalhes_dict.get('nome', '?')}\n"
+            f"Usuário: {detalhes_dict.get('usuario', '?')}\n"
+            f"Estado: {detalhes_dict.get('estado', '?')}\n"
+            f"Prioridade: {detalhes_dict.get('prioridade', '?')}\n"
+            f"Threads: {detalhes_dict.get('threads', '?')}\n"
+            f"Tempo CPU (s): {detalhes_dict.get('cpu_s', '?')}\n"
+            f"%CPU: {detalhes_dict.get('cpu_percent', '?')}\n"
+        )
+        CTkLabel(frame_detalhes, text=texto, font=("Arial", 14), anchor="w", justify="left").pack(anchor="w", pady=10)
+
         frame_threads = CTkFrame(self)
         frame_threads.pack(fill="both", expand=True, padx=20, pady=(10, 20))
         CTkLabel(frame_threads, text="Threads:", font=("Arial", 14, "bold"), anchor="w").pack(anchor="w")
