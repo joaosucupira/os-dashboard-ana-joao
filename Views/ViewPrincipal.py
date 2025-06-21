@@ -4,9 +4,9 @@ from customtkinter import CTkLabel, CTkButton
 from Views.TabelaProcessosView import TabelaProcessosView
 
 class ViewPrincipal(ctk.CTk):
-    def __init__(self, abrir_tabela_callback, abrir_memoria_callback):
+    def __init__(self, abrir_tabela_callback, abrir_memoria_callback, abrir_arquivos_callback):
         super().__init__()
-        self.title("Stich Dashboard - Tela inicial")
+        self.title("Stitch Dashboard - Tela inicial")
         self.geometry("500x300")
 
         self.label = CTkLabel(self, text="Bem-vindo ao Stitch Dashboard", font=("Arial", 18, "bold"))
@@ -18,4 +18,8 @@ class ViewPrincipal(ctk.CTk):
 
         # memoria
         self.btn_memoria = CTkButton(self, text="Ver Informacoes de Memoria", command=abrir_memoria_callback)
+        self.btn_memoria.pack(pady=10)
+
+        # memoria
+        self.btn_memoria = CTkButton(self, text="Ver Informacoes de Arquivos e Dispositivos de E/S", command=abrir_arquivos_callback)
         self.btn_memoria.pack(pady=10)
