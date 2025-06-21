@@ -1,6 +1,7 @@
 from Views.ViewPrincipal import ViewPrincipal
 from Views.TabelaProcessosView import TabelaProcessosView
 from Views.TabelaProcessosArquivosView import TabelaProcessosArquivosView
+
 from Controllers.MemoriaController import MemoriaController
 from Controllers.ProcessoController import ProcessoController
 from Controllers.ArquivosController import ArquivosController
@@ -17,7 +18,7 @@ class PrincipalController:
     def executar_tabela_memoria(self):
         MemoriaController(self.view_p)
 
-    # chama o controler da memoria
+    # chama o controler da tela de arquivos e dispositivos de E/S
     def executar_tabela_arquivos(self):
         ArquivosController(self.view_p)     
 
@@ -33,5 +34,9 @@ class PrincipalController:
             # Fecha view filha de memória, se existir e estiver aberta
             if hasattr(self, 'memoria_controller') and self.memoria_controller:
                 if hasattr(self.memoria_controller, 'view_p') and self.memoria_controller.view_p.winfo_exists():
+                    self.memoria_controller.view_p.destroy()
+            # Fecha view filha de arquivos, se existir e estiver aberta
+            if hasattr(self, 'arquivos_controller') and self.arquivos_controller:
+                if hasattr(self.arquivos_controller, 'view_p') and self.arquivo_controller.view_p.winfo_exists():
                     self.memoria_controller.view_p.destroy()
             self.view_p.fechar()

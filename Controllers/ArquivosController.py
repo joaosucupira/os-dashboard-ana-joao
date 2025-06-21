@@ -1,12 +1,15 @@
 import threading
 import time
 
-from Models.GerenciadorProcessos import GerenciadorProcessos
+# Mudar depois para GerenciadorArquivos!!!
+from Models.GerenciadorArquivos import GerenciadorArquivos
+
+# Mudar views!
 from Views.TabelaProcessosView import TabelaProcessosView
 from Views.TabelaProcessosArquivosView import TabelaProcessosArquivosView
 
+# Mudar depois para detalhesArquivosController!!!
 from Controllers.DetalhesProcController import DetalhesProcController
-from Controllers.ResumoCPUController import ResumoCPUController
 
 class ArquivosController:
     def __init__(self, master):
@@ -14,7 +17,7 @@ class ArquivosController:
 
     def coletar_processos_em_thread(self):
         while not self._stop_event.is_set():
-            processos = self.model.listar_processos_e_usuarios()
+            processos = self.model.listar_processos_e_arquivos()
             with self._lock:  # protege o acesso a lista de processos
                 self._processos = processos
             time.sleep(0.5)  # coleta a cada 2 segundos
@@ -36,10 +39,10 @@ class ArquivosController:
         except Exception:
             pass
 
-    # Módulo da inicialização do controller: prepara botao, cliques de linha parac selecionar processo e thread
+    # Módulo da inicialização do controller: prepara botao, cliques de linha para selecionar processo e thread
     # para rodar a rotina paralelamente
     def inicializa(self, master):
-        self.model = GerenciadorProcessos()
+        self.model = GerenciadorArquivos()
         self.view = TabelaProcessosArquivosView(master=master, callback_acao_linha=self.abrir_detalhes_processo)
 
         self._stop_event = threading.Event()
@@ -55,6 +58,3 @@ class ArquivosController:
     def abrir_detalhes_processo(self, proc):
         pid = proc['pid']
         DetalhesProcController(pid, self.view)
-
-    def abrir_info_global(self):
-        ResumoCPUController(self.view)
