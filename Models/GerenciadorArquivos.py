@@ -18,6 +18,7 @@ class GerenciadorArquivos:
 
                     # Caminho para acessar o diretório de arquivos do processo
                     fd_path = f"/proc/{pid}/fd"
+                    status_path = f"/proc/{pid}/status"
 
                     try:
                         # Um subgerenciador para lidar com o diretório de descritores de arquivos do processo
@@ -39,23 +40,21 @@ class GerenciadorArquivos:
                                             #     mutexes += 1
                                             elif target.startswith("/"):
                                                 arquivos += 1
-                                        # Seja específico sobre as exceções que você espera
-                                        except FileNotFoundError:
-                                            # O descritor de arquivo foi fechado entre a listagem e a leitura (race condition)
-                                            # Isso é esperado em um sistema ativo, então podemos ignorar com segurança.
-                                            continue
-                                        except PermissionError as e:
-                                            # Logar o erro de permissão é útil para o diagnóstico
-                                            logging.warning(f"Não foi possível ler o link para {fd_entry.path}: {e}")
-                                            continue
-                                        except Exception as e:
-                                            # Logue qualquer outro erro inesperado em vez de ignorá-lo
-                                            logging.error(f"Erro inesperado ao processar {fd_entry.path}: {e}", exc_info=True)
+                                            else:
+                                                try:
+                                                     with open(status_path, 'r') as status_file:
+                                                        for line in status_file:
+                                                            print("checking line:", line)
+                                                            if 'semaphores' in line.lower() or 'mutex' in line.lower():
+                                                                mutexes += 1
+                                                except Exception as e:
+                                                    logging.error(f"Erro ao ler status do processo {pid}: {e}")
+                                                    continue
+                                        except Exception:
                                             continue
 
-                            except Exception as e:
-                                # Logue erros que possam ocorrer ao iterar o próprio diretório
-                                logging.error(f"Falha ao iterar o diretório {fd_path}: {e}", exc_info=True)
+                            except Exception:
+                                pass
 
                         # Caminho para acessar o nome e estado do processo
                         try:

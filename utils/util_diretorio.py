@@ -1,14 +1,11 @@
-# Classes e módulos utilitários que auxiliam mais de um model do projeto em relação ao acesso 
-# dos diretórios de /proc
+# util_diretorio.py (versão com leitura de caminhos e links atualizados)
 
 import ctypes
+import os
 from dataclasses import dataclass
 from typing import Iterator
 
-
 # Classe base que simula uma struct C que representa uma entrada de diretório.
-# Usada para interagir com o sistema de arquivos em nível de sistema operacional.
-
 class StructDir(ctypes.Structure):
     _fields_ = [
         ("d_ino", ctypes.c_ulong),      
@@ -18,8 +15,11 @@ class StructDir(ctypes.Structure):
         ("d_name", ctypes.c_char * 256) 
     ]
 
-# Classe de dados que adapta a estrutura de diretório para Python.
+# Constantes para os tipos de arquivo do campo d_type.
+DT_UNKNOWN = 0
+DT_LNK = 10 # d_type para Link Simbólico (Symbolic Link)
 
+# Classe de dados que adapta a estrutura de diretório para Python.
 @dataclass
 class DataDir:
     ino:    int
@@ -27,14 +27,35 @@ class DataDir:
     reclen: int
     type:   int
     name:   str
+    caminho: str # Armazena o caminho completo da entrada
+
+    def is_symlink(self) -> bool:
+        # Verifica se a entrada é um link simbólico, de forma otimizada e segura
+        if self.type != DT_UNKNOWN:
+            return self.type == DT_LNK
+        try:
+            return os.path.islink(self.caminho)
+        except FileNotFoundError:
+            return False
+
+    def readlink(self) -> str:
+        #Lê o destino de um link simbólico de forma segura
+        try:
+            return os.readlink(self.caminho)
+        except (FileNotFoundError, OSError):
+            return ""
 
 class GerenciadorDiretorio:
     def __init__(self, path: str):
+        self.path = path # Armazena o caminho do diretório
         self.libc = ctypes.CDLL(None)
-        self.config_libc(path)
         
-        
-    # Configuração de abertura, leitura e fechamento dos diretórios.
+        # Verifica se o caminho existe e é um diretório
+        if not os.path.isdir(self.path):
+            self._dirp = None
+        else:
+            self.config_libc(self.path)
+
     def config_libc(self, path):
         self.libc.opendir.argtypes = [ctypes.c_char_p]
         self.libc.opendir.restype = ctypes.c_void_p
@@ -45,13 +66,17 @@ class GerenciadorDiretorio:
         self.libc.closedir.argtypes = [ctypes.c_void_p]
         self.libc.closedir.restype = ctypes.c_int
         
-        self._dirp = self.libc.opendir(path.encode("utf-8"))
+        try:
+            self._dirp = self.libc.opendir(path.encode("utf-8"))
+        except Exception:
+            self._dirp = None
     
-    # Iterador de diretorios
     def __iter__(self) -> Iterator[DataDir]:
+        # Não itera se o diretório não pôde ser aberto
+        if not self._dirp:
+            return iter(())
         return self._iter_entries()
 
-    # Lógica do iterador
     def _iter_entries(self):
         while True:
             dirent_p = self.libc.readdir(self._dirp)
@@ -60,13 +85,18 @@ class GerenciadorDiretorio:
             conteudo = dirent_p.contents
             name = conteudo.d_name.decode("utf-8").rstrip("\x00")
             
-            # Instancia o DataDir com os conteudos obtidos do diretorio
+            if name in ('.', '..'):
+                continue
+
+            caminho_completo = os.path.join(self.path, name)
+            
             yield DataDir(
                 ino    = conteudo.d_ino,
                 off    = conteudo.d_off,
                 reclen = conteudo.d_reclen,
                 type   = conteudo.d_type,
-                name   = name
+                name   = name,
+                caminho = caminho_completo
             )
 
     def close(self):
@@ -80,7 +110,7 @@ class GerenciadorDiretorio:
     def __exit__(self, exc_type, exc, tb):
         self.close()
 
-
+# A partir daqui o codigo nao foi alterado
 # Funções uteis
 
 # Indices para parametro de sistemas da função c 'sysconf' para obter respectivamente
