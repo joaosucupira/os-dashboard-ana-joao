@@ -4,6 +4,7 @@ from Views.TabelaProcessosArquivosView import TabelaProcessosArquivosView
 from Controllers.MemoriaController import MemoriaController
 from Controllers.ProcessoController import ProcessoController
 from Controllers.ArquivosController import ArquivosController
+from Controllers.DiscoController import DiscoController
 
 class PrincipalController:
     def __init__(self):
@@ -22,7 +23,7 @@ class PrincipalController:
         ArquivosController(self.view_p)     
         
     def executar_arvore_disco(self):
-        raise NotImplementedError("Funcionalidade de acesso a diretórios do disco ainda não implementada.")
+        DiscoController(self.view_p)
 
     def executar(self):
         self.view_p.mainloop()
