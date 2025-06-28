@@ -5,11 +5,10 @@ import time
 from Models.GerenciadorArquivos import GerenciadorArquivos
 
 # Mudar views!
-from Views.TabelaProcessosView import TabelaProcessosView
 from Views.TabelaProcessosArquivosView import TabelaProcessosArquivosView
 
 # Mudar depois para detalhesArquivosController!!!
-from Controllers.DetalhesProcController import DetalhesProcController
+from Controllers.DetalhesArqController import DetalhesArqController
 
 class ArquivosController:
     def __init__(self, master):
@@ -57,4 +56,4 @@ class ArquivosController:
 
     def abrir_detalhes_processo(self, proc):
         pid = proc['pid']
-        DetalhesProcController(pid, self.view)
+        DetalhesArqController(pid, self.view)
