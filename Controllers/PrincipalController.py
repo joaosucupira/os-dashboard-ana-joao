@@ -7,7 +7,7 @@ from Controllers.ArquivosController import ArquivosController
 
 class PrincipalController:
     def __init__(self):
-        self.view_p = ViewPrincipal(self.executar_tabela_processos, self.executar_tabela_memoria, self.executar_tabela_arquivos)
+        self.view_p = ViewPrincipal(self.executar_tabela_processos, self.executar_tabela_memoria, self.executar_tabela_arquivos, self.executar_arvore_disco)
 
     # chama o controler dos processos e cpu
     def executar_tabela_processos(self):
@@ -20,6 +20,9 @@ class PrincipalController:
     # chama o controler da memoria
     def executar_tabela_arquivos(self):
         ArquivosController(self.view_p)     
+        
+    def executar_arvore_disco(self):
+        raise NotImplementedError("Funcionalidade de acesso a diretórios do disco ainda não implementada.")
 
     def executar(self):
         self.view_p.mainloop()
