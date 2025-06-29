@@ -77,7 +77,7 @@ class GerenciadorArquivos:
                                                 cpid = int(partes[5])
                                                 lpid = int(partes[6])
                                                 
-                                                if pid == cpid or pid == lpid:
+                                                if int(pid) == cpid or int(pid) == lpid:
                                                     mutexes += 1
                                             except (ValueError, IndexError):
                                                 continue
