@@ -1,57 +1,54 @@
 import ctypes
 import os
+import platform
+import errno  # Módulo para traduzir códigos de erro
+import sys    # Módulo para imprimir na saída de erro padrão (stderr)
 
-# --- Estruturas com tipos explícitos para sistemas de 64 bits ---
-
-# Esta é a definição de 'struct stat' para a maioria dos sistemas Linux de 64 bits.
-# Usamos tipos de tamanho fixo (ex: c_uint64) para evitar ambiguidades.
-class struct_stat(ctypes.Structure):
-    _fields_ = [
-        ('st_dev', ctypes.c_uint64),      # ID do dispositivo
-        ('st_ino', ctypes.c_uint64),      # Inode
-        ('st_nlink', ctypes.c_uint64),    # Número de links
-        ('st_mode', ctypes.c_uint32),     # Permissões
-        ('st_uid', ctypes.c_uint32),      # User ID
-        ('st_gid', ctypes.c_uint32),      # Group ID
-        ('__pad0', ctypes.c_int32),       # Padding explícito para alinhamento
-        ('st_rdev', ctypes.c_uint64),     # ID do dispositivo (se especial)
-        ('st_size', ctypes.c_int64),      # Tamanho em bytes
-        ('st_blksize', ctypes.c_int64),   # Tamanho do bloco para I/O
-        ('st_blocks', ctypes.c_int64),    # Número de blocos de 512B alocados
-        ('st_atime', ctypes.c_int64),     # Último acesso (timestamp)
-        ('st_atime_ns', ctypes.c_int64),  # Nanossegundos
-        ('st_mtime', ctypes.c_int64),     # Última modificação (timestamp)
-        ('st_mtime_ns', ctypes.c_int64),  # Nanossegundos
-        ('st_ctime', ctypes.c_int64),     # Última mudança (timestamp)
-        ('st_ctime_ns', ctypes.c_int64),  # Nanossegundos
-        ('__unused', ctypes.c_int64 * 3), # Reservado
-    ]
-
-# Definição de 'struct statvfs' para sistemas de 64 bits.
+# As definições das estruturas e a detecção de arquitetura permanecem as mesmas
 class struct_statvfs(ctypes.Structure):
     _fields_ = [
-        ('f_bsize', ctypes.c_ulong),
-        ('f_frsize', ctypes.c_ulong),
-        ('f_blocks', ctypes.c_ulonglong), # Usamos ulonglong para garantir 64 bits
-        ('f_bfree', ctypes.c_ulonglong),
-        ('f_bavail', ctypes.c_ulonglong),
-        ('f_files', ctypes.c_ulonglong),
-        ('f_ffree', ctypes.c_ulonglong),
-        ('f_favail', ctypes.c_ulonglong),
-        ('f_fsid', ctypes.c_ulong),
-        ('f_flag', ctypes.c_ulong),
-        ('f_namemax', ctypes.c_ulong),
-        ('__f_spare', ctypes.c_int * 6),
+        ('f_bsize', ctypes.c_ulong), ('f_frsize', ctypes.c_ulong),
+        ('f_blocks', ctypes.c_ulonglong), ('f_bfree', ctypes.c_ulonglong),
+        ('f_bavail', ctypes.c_ulonglong), ('f_files', ctypes.c_ulonglong),
+        ('f_ffree', ctypes.c_ulonglong), ('f_favail', ctypes.c_ulonglong),
+        ('f_fsid', ctypes.c_ulong), ('f_flag', ctypes.c_ulong),
+        ('f_namemax', ctypes.c_ulong), ('__f_spare', ctypes.c_int * 6),
     ]
 
-libc = ctypes.CDLL(None, use_errno=True)
+machine_arch = platform.machine()
+if machine_arch == "x86_64":
+    class struct_stat(ctypes.Structure):
+        _fields_ = [
+            ('st_dev', ctypes.c_uint64), ('st_ino', ctypes.c_uint64),
+            ('st_nlink', ctypes.c_uint64), ('st_mode', ctypes.c_uint32),
+            ('st_uid', ctypes.c_uint32), ('st_gid', ctypes.c_uint32),
+            ('__pad0', ctypes.c_int32), ('st_rdev', ctypes.c_uint64),
+            ('st_size', ctypes.c_int64), ('st_blksize', ctypes.c_int64),
+            ('st_blocks', ctypes.c_int64), ('st_atime', ctypes.c_int64),
+            ('st_atime_ns', ctypes.c_int64), ('st_mtime', ctypes.c_int64),
+            ('st_mtime_ns', ctypes.c_int64), ('st_ctime', ctypes.c_int64),
+            ('st_ctime_ns', ctypes.c_int64), ('__unused', ctypes.c_int64 * 3),
+        ]
+else:
+    class struct_stat(ctypes.Structure):
+        _fields_ = [
+            ('st_dev', ctypes.c_ulong), ('st_ino', ctypes.c_ulong),
+            ('st_mode', ctypes.c_uint), ('st_nlink', ctypes.c_uint),
+            ('st_uid', ctypes.c_uint), ('st_gid', ctypes.c_uint),
+            ('st_rdev', ctypes.c_ulong), ('__pad1', ctypes.c_ulong),
+            ('st_size', ctypes.c_long), ('st_blksize', ctypes.c_int),
+            ('__pad2', ctypes.c_int), ('st_blocks', ctypes.c_long),
+            ('st_atime', ctypes.c_long), ('st_atime_ns', ctypes.c_ulong),
+            ('st_mtime', ctypes.c_long), ('st_mtime_ns', ctypes.c_ulong),
+            ('st_ctime', ctypes.c_long), ('st_ctime_ns', ctypes.c_ulong),
+            ('__unused4', ctypes.c_uint), ('__unused5', ctypes.c_uint),
+        ]
 
+libc = ctypes.CDLL(None, use_errno=True)
 statvfs = libc.statvfs
 statvfs.argtypes = [ctypes.c_char_p, ctypes.POINTER(struct_statvfs)]
 statvfs.restype = ctypes.c_int
 
-# A syscall stat mudou. Em sistemas modernos, é __xstat.
-# O Python esconde isso, mas com ctypes, precisamos ser explícitos.
 xstat = libc.__xstat
 xstat.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.POINTER(struct_stat)]
 xstat.restype = ctypes.c_int
@@ -63,28 +60,32 @@ def get_fs_usage(path):
     path_bytes = path.encode('utf-8')
     if statvfs(path_bytes, ctypes.byref(fs_stats)) != 0:
         return None
-
     total_gb = (fs_stats.f_blocks * fs_stats.f_frsize) / (1024**3)
     free_gb = (fs_stats.f_bfree * fs_stats.f_frsize) / (1024**3)
     used_gb = total_gb - free_gb
     use_perc = (used_gb / total_gb) * 100 if total_gb > 0 else 0
-
-    return { "total": total_gb, "used": used_gb, "free": free_gb, "use_perc": use_perc }
+    return {"total": total_gb, "used": used_gb, "free": free_gb, "use_perc": use_perc}
 
 def get_file_info(path):
     file_stats = struct_stat()
     path_bytes = path.encode('utf-8')
     
-    # Usamos __xstat que é a syscall correta para a struct que definimos.
-    # O primeiro argumento (1) é a versão da struct.
+    # A chamada para __xstat permanece a mesma
     if xstat(1, path_bytes, ctypes.byref(file_stats)) != 0:
-        return None
+        # --- INÍCIO DA MUDANÇA ---
+        # Se a chamada falhar, capturamos o código de erro (errno)
+        error_code = ctypes.get_errno()
+        # Traduzimos o código para uma mensagem legível (ex: 'EPERM', 'EACCES')
+        error_message = errno.errorcode.get(error_code, f"Código de erro desconhecido {error_code}")
+        
+        # Imprimimos uma mensagem de depuração detalhada na saída de erro padrão
+        print(
+            f"DEBUG: A chamada xstat falhou para o caminho '{path}' "
+            f"com errno {error_code} ({error_message})",
+            file=sys.stderr
+        )
+        # --- FIM DA MUDANÇA ---
+        return None # Retorna None, o que causa o aviso no GerenciadorDisco
 
     is_dir = (file_stats.st_mode & S_IFDIR) != 0
-    
-    return {
-        "size": file_stats.st_size,
-        "is_dir": is_dir,
-        "permissions": oct(file_stats.st_mode)[-3:],
-        "mtime": file_stats.st_mtime,
-    }
+    return {"size": file_stats.st_size, "is_dir": is_dir, "permissions": oct(file_stats.st_mode)[-3:], "mtime": file_stats.st_mtime}
