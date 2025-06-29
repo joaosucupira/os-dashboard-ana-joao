@@ -2,7 +2,7 @@ import customtkinter as ctk
 from customtkinter import CTkLabel, CTkTextbox, CTkFrame
 
 class DetalhesArquivosView(ctk.CTkToplevel):
-    def __init__(self, master, arquivos_list, sockets_list, mutexes_list, pid):
+    def __init__(self, master, infos_list, pid):
         super().__init__(master=master)
         self.title(f'Detalhes do processo {str(pid)}')
         self.geometry("1000x500")
@@ -14,10 +14,12 @@ class DetalhesArquivosView(ctk.CTkToplevel):
         arquivos_box = CTkTextbox(frame_arquivos, width=640, height=300, font=("Courier New", 12))
         arquivos_box.pack(fill="both", expand=True)
 
-        header = f"{'FD':<10}{'CAMINHO'}\n"
+        header = f"{'FD':<8}{'TIPO':<15}{'CAMINHO':<40}\n"
         arquivos_box.insert("end", header)
         arquivos_box.insert("end", "="*130 + "\n")
 
-        for a in arquivos_list:
-            arquivos_box.insert("end", f"{a.get('fd','?'):<10}{a.get('caminho','?')}\n")
+        for a in infos_list:
+            arquivos_box.insert("end", f"{a.get('fd','?'):<8}{a.get('tipo','?'):<15}{a.get('caminho','?')}\n")
         arquivos_box.configure(state="disabled")
+
+        

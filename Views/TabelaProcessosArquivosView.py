@@ -22,11 +22,13 @@ class TabelaProcessosArquivosView(ctk.CTkToplevel):
         for proc in processos:
             linha_texto = (
                 f"{proc['pid']:<10}"
-                f"{proc['nome'][:31]:<50}"
+                f"{proc['nome'][:31]:<40}"
                 f"{proc['usuario'][:21]:<22}"
                 f"{proc['arquivos']:<10}"
                 f"{proc['sockets']:<10}"
-                f"{proc['mutexes']:<10}\n"
+                f"{proc['pipes']:<10}"
+                f"{proc['mutexes']:<10}"
+                f"{proc['outros']:<10}\n"
             )
             self.tabela.insert("end", linha_texto)
 
@@ -36,11 +38,13 @@ class TabelaProcessosArquivosView(ctk.CTkToplevel):
     def monta_header(self):
         header_text = (
             f"{'PID':<10}"
-            f"{'Nome':<50}"
+            f"{'Nome':<40}"
             f"{'Usuário':<22}"
             f"{'Arquivos':<10}"
             f"{'Sockets':<10}"
-            f"{'Mutexes':<10}\n"
+            f"{'Pipes':<10}"
+            f"{'Mutexes':<10}"
+            f"{'Outros':<10}\n"
         )
         header = CTkLabel(
             self,

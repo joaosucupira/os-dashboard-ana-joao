@@ -25,7 +25,9 @@ class GerenciadorArquivos:
                         with GerenciadorDiretorio(fd_path) as fd_gd:
                             arquivos = 0
                             sockets = 0
+                            pipes = 0
                             mutexes = 0
+                            outros = 0
                             
                             # Percorre todos os descritores de arquivos do processo
                             # e conta os arquivos, sockets e mutexes
@@ -37,6 +39,9 @@ class GerenciadorArquivos:
                                             # Conta quantidade de sockets
                                             if target.startswith("socket:"):
                                                 sockets += 1
+                                            # Conta quantidade de pipes
+                                            elif target.startswith("pipe:"):
+                                                pipes += 1
                                             # Conta quantidade de mutexes nomeados (sugestao do gemini)
                                             elif target.startswith("/dev/shm/sem."):
                                                 mutexes += 1
@@ -46,6 +51,8 @@ class GerenciadorArquivos:
                                             # Conta quantidade de arquivos abertos
                                             elif target.startswith("/"):
                                                 arquivos += 1
+                                            elif target.startswith("anon_inode:"):
+                                                outros += 1
                                         except Exception:
                                             continue
 
@@ -120,12 +127,15 @@ class GerenciadorArquivos:
                                 "usuario": usuario,
                                 "arquivos": arquivos,
                                 "sockets": sockets,
-                                "mutexes": mutexes
+                                "pipes": pipes,
+                                "mutexes": mutexes,
+                                "outros": outros
+
                             })
                         except Exception:
                             continue
                     except Exception:
                         continue
 
-        processos.sort(key=lambda p: (p['arquivos'], p['sockets'], p['mutexes']), reverse=True)
+        processos.sort(key=lambda p: (p['arquivos'], p['sockets'], p['pipes'], p['mutexes']), reverse=True)
         return processos

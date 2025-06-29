@@ -7,15 +7,16 @@ class GerenciadorDetalhesArq:
     def __init__(self, pid):
         self.pid = str(pid)
         self.proc_dir = f'/proc/{self.pid}'
-        self.arquivos_info = []
+        self.fd_dir = f'{self.proc_dir}/fd'
+        self.infos = []
         self.ga = GerenciadorArquivos()
         
 
     # Carregamento dos arquivos abertos do processo
-    def carregar_arquivos(self):
+    def carregar_infos(self):
 
-        fd_path = f'{self.proc_dir}/fd'
-        with GerenciadorDiretorio(fd_path) as gd:
+        
+        with GerenciadorDiretorio(self.fd_dir) as gd:
             for entry in gd:
                 if entry.is_symlink():
                     try:
@@ -23,41 +24,50 @@ class GerenciadorDetalhesArq:
                         if target.startswith("/"):
                             fd_info = {
                                 "fd": entry.name,
-                                "caminho": target
+                                "caminho": target,
+                                "tipo": "arquivo"
                             }
-                        self.arquivos_info.append(fd_info)
+                            self.infos.append(fd_info)
+                        elif target.startswith("socket:"):
+                            fd_info = {
+                                "fd": entry.name,
+                                "caminho": target,
+                                "tipo": "socket"
+                            }
+                            self.infos.append(fd_info)
+                        elif target.startswith("pipe:"):
+                            fd_info = {
+                                "fd": entry.name,
+                                "caminho": target,
+                                "tipo": "pipe"
+                            }
+                            self.infos.append(fd_info)
+                        elif target.startswith("/dev/shm/sem."):
+                            fd_info = {
+                                "fd": entry.name,
+                                "caminho": target,
+                                "tipo": "mutex"
+                            }
+                            self.infos.append(fd_info)
+                        elif "anon_inode:mutex" in target:
+                            fd_info = {
+                                "fd": entry.name,
+                                "caminho": target,
+                                "tipo": "mutex"
+                            }
+                            self.infos.append(fd_info)
+                        elif target.startswith("anon_inode:"):
+                            fd_info = {
+                                "fd": entry.name,
+                                "caminho": target,
+                                "tipo": "outro"
+                            }
+                            self.infos.append(fd_info)
                     except Exception:
                         continue
 
-        # task_dir = f'{self.proc_dir}/task'
-        # with GerenciadorDiretorio(task_dir) as gd:
-        #     for entry in gd:
-        #         tid = entry.name
-        #         # ignorando diretorios que nao sao processos
-        #         if tid == "." or tid == ".." : continue 
-
-        #         thread_info = {"tid": tid}
-        #         status_path = f'{task_dir}/{tid}/status'
-
-        #         try:
-        #             with open(status_path, "r") as f:
-        #                 for line in f:
-
-        #                     if line.startswith("Name:"):
-        #                         thread_info["name"] = line.split()[1]
-        #                     if line.startswith("State:"):
-        #                         thread_info["state"] = state_id_para_nome(line.split()[1])
-
-        #         except Exception:
-        #             thread_info["name"] = "?"
-        #             thread_info["state"] = "?"
-
-        #         self.threads_info.append(thread_info)
-
-    def get_info_arquivos(self): 
-        return self.arquivos_info
-
     def carregar_detalhes_processo(self):
-        self.carregar_arquivos()
-        
-    
+        self.infos.clear()
+        self.carregar_infos()
+        return self.infos
+
