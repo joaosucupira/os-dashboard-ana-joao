@@ -66,7 +66,8 @@ class GerenciadorArquivos:
                                     # Cada linha corresponde a um futex em espera
                                     mutexes += len(f.readlines())
                             except PermissionError as e:
-                                print(f"Não foi possível acessar {futex_path} para o processo {pid}: {e}")
+                                # print(f"Não foi possível acessar {futex_path} para o processo {pid}: {e}")
+                                pass
                             except FileNotFoundError:
                                 pass
 
@@ -90,11 +91,11 @@ class GerenciadorArquivos:
                                                 continue
                             except FileNotFoundError as e:
                                 # O arquivo pode não existir se o módulo de kernel não estiver carregado
-                                print(f"Arquivo sysvipc/sem não encontrado para o processo {pid}: {e}")
+                                # print(f"Arquivo sysvipc/sem não encontrado para o processo {pid}: {e}")
                                 pass
                             except Exception as e:
                                 # Outros erros (ex: permissão)
-                                print(f"Erro ao acessar sysvipc/sem para o processo {pid}: {e}")
+                                # print(f"Erro ao acessar sysvipc/sem para o processo {pid}: {e}")
                                 pass
 
                             # Conta a quantidade de mutexes (forma como esta no repo suhbrasil)
@@ -105,8 +106,8 @@ class GerenciadorArquivos:
                                         if 'semaphores' in line.lower() or 'mutex' in line.lower():
                                             mutexes += 1
                             except Exception as e:
-                                logging.error(f"Erro ao ler status do processo {pid}: {e}")
-                                continue
+                                # logging.error(f"Erro ao ler status do processo {pid}: {e}")
+                                pass
 
                         # Caminho para acessar o nome e estado do processo
                         try:
@@ -133,9 +134,9 @@ class GerenciadorArquivos:
 
                             })
                         except Exception:
-                            continue
+                            pass
                     except Exception:
-                        continue
+                        pass
 
         processos.sort(key=lambda p: (p['arquivos'], p['sockets'], p['pipes'], p['mutexes']), reverse=True)
         return processos
