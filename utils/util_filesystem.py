@@ -1,10 +1,9 @@
 import ctypes
-import os
 import platform
-import errno  # Módulo para traduzir códigos de erro
-import sys    # Módulo para imprimir na saída de erro padrão (stderr)
+import errno  
+import sys   
 
-# As definições das estruturas e a detecção de arquitetura permanecem as mesmas
+# As definições das estruturas e a detecção de arquitetura 
 class struct_statvfs(ctypes.Structure):
     _fields_ = [
         ('f_bsize', ctypes.c_ulong), ('f_frsize', ctypes.c_ulong),
@@ -15,6 +14,7 @@ class struct_statvfs(ctypes.Structure):
         ('f_namemax', ctypes.c_ulong), ('__f_spare', ctypes.c_int * 6),
     ]
 
+# Se for AMD
 machine_arch = platform.machine()
 if machine_arch == "x86_64":
     class struct_stat(ctypes.Structure):
@@ -29,7 +29,7 @@ if machine_arch == "x86_64":
             ('st_mtime_ns', ctypes.c_int64), ('st_ctime', ctypes.c_int64),
             ('st_ctime_ns', ctypes.c_int64), ('__unused', ctypes.c_int64 * 3),
         ]
-else:
+else: # Se for ARM
     class struct_stat(ctypes.Structure):
         _fields_ = [
             ('st_dev', ctypes.c_ulong), ('st_ino', ctypes.c_ulong),
@@ -43,6 +43,7 @@ else:
             ('st_ctime', ctypes.c_long), ('st_ctime_ns', ctypes.c_ulong),
             ('__unused4', ctypes.c_uint), ('__unused5', ctypes.c_uint),
         ]
+# Definição das chamadas de sistema necessárias
 
 libc = ctypes.CDLL(None, use_errno=True)
 statvfs = libc.statvfs
@@ -54,6 +55,8 @@ xstat.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.POINTER(struct_stat)]
 xstat.restype = ctypes.c_int
 
 S_IFDIR = 0o040000
+
+
 
 def get_fs_usage(path):
     fs_stats = struct_statvfs()
@@ -70,9 +73,8 @@ def get_file_info(path):
     file_stats = struct_stat()
     path_bytes = path.encode('utf-8')
     
-    # A chamada para __xstat permanece a mesma
     if xstat(1, path_bytes, ctypes.byref(file_stats)) != 0:
-        # --- INÍCIO DA MUDANÇA ---
+
         # Se a chamada falhar, capturamos o código de erro (errno)
         error_code = ctypes.get_errno()
         # Traduzimos o código para uma mensagem legível (ex: 'EPERM', 'EACCES')
@@ -84,8 +86,8 @@ def get_file_info(path):
             f"com errno {error_code} ({error_message})",
             file=sys.stderr
         )
-        # --- FIM DA MUDANÇA ---
-        return None # Retorna None, o que causa o aviso no GerenciadorDisco
+
+        return None
 
     is_dir = (file_stats.st_mode & S_IFDIR) != 0
     return {"size": file_stats.st_size, "is_dir": is_dir, "permissions": oct(file_stats.st_mode)[-3:], "mtime": file_stats.st_mtime}
