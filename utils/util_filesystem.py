@@ -1,72 +1,73 @@
 import ctypes
 import os
-import subprocess # Para compilar nosso código C
+import subprocess
+import sys
 
-# --- COMPILAÇÃO AUTOMÁTICA DO AJUDANTE C ---
+# --- COMPILAÇÃO AUTOMÁTICA DO AJUDANTE C (VERSÃO ROBUSTA) ---
 
-# Caminho para o nosso código C e para a biblioteca compilada
-c_helper_source = os.path.join(os.path.dirname(__file__), 'helper.c')
-c_helper_lib = os.path.join(os.path.dirname(__file__), 'helper.so')
+try:
+    # Obtém o caminho absoluto para o diretório 'utils'
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    
+    # Define os caminhos absolutos para o código-fonte e para a biblioteca compilada
+    c_helper_source = os.path.join(dir_path, 'helper.c')
+    c_helper_lib = os.path.join(dir_path, 'helper.so')
 
-# Compila o helper.c em helper.so se a biblioteca não existir ou for mais antiga que o código-fonte
-if not os.path.exists(c_helper_lib) or os.path.getmtime(c_helper_source) > os.path.getmtime(c_helper_lib):
-    print("Compilando o ajudante C (helper.c)...")
-    try:
-        # Comando para compilar o código C em uma biblioteca compartilhada
+    # Checa se a compilação é necessária
+    compile_needed = not os.path.exists(c_helper_lib) or os.path.getmtime(c_helper_source) > os.path.getmtime(c_helper_lib)
+
+    if compile_needed:
+        print(f"INFO: Compilação do ajudante C necessária. Compilando '{c_helper_source}'...")
+        
+        # Garante que o compilador gcc está disponível
+        if subprocess.call(['which', 'gcc'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) != 0:
+            print("ERRO CRÍTICO: Compilador 'gcc' não encontrado. Por favor, instale o gcc ('sudo apt-get install build-essential').", file=sys.stderr)
+            sys.exit(1)
+
+        # Comando de compilação
         compile_command = ['gcc', '-shared', '-o', c_helper_lib, '-fPIC', c_helper_source]
+        
+        # Executa a compilação
         subprocess.run(compile_command, check=True)
-        print("Ajudante compilado com sucesso.")
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        print(f"ERRO CRÍTICO: Falha ao compilar helper.c. Verifique se o 'gcc' está instalado.")
-        print(f"Erro: {e}")
-        # Se não conseguir compilar, o programa não pode continuar.
-        exit(1)
+        print("INFO: Ajudante compilado com sucesso.")
+    else:
+        print("INFO: Compilação do ajudante C não é necessária (o arquivo .so já está atualizado).")
 
-# --- CARREGAMENTO DA NOSSA BIBLIOTECA C ---
+    # Verificação final: Garante que o arquivo .so existe antes de continuar
+    if not os.path.exists(c_helper_lib):
+        print(f"ERRO CRÍTICO: O arquivo da biblioteca '{c_helper_lib}' não foi encontrado mesmo após a tentativa de compilação.", file=sys.stderr)
+        sys.exit(1)
 
-# Carrega a biblioteca que acabamos de compilar
+except (subprocess.CalledProcessError, FileNotFoundError) as e:
+    print(f"ERRO CRÍTICO: Falha no processo de compilação do helper.c.", file=sys.stderr)
+    print(f"Erro detalhado: {e}", file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print(f"ERRO INESPERADO durante a configuração da biblioteca: {e}", file=sys.stderr)
+    sys.exit(1)
+
+# --- CARREGAMENTO DA BIBLIOTECA E DEFINIÇÃO DAS FUNÇÕES (sem alterações) ---
+
+# O resto do arquivo permanece o mesmo, pois o problema estava na criação da biblioteca.
 libc_helper = ctypes.CDLL(c_helper_lib)
 
-# Define a estrutura Python que corresponde à nossa 'SimpleStat' em C
 class SimpleStat(ctypes.Structure):
     _fields_ = [
-        ('size', ctypes.c_longlong),
-        ('mtime', ctypes.c_long),
-        ('is_dir', ctypes.c_int),
-        ('mode', ctypes.c_int),
+        ('size', ctypes.c_longlong), ('mtime', ctypes.c_long),
+        ('is_dir', ctypes.c_int), ('mode', ctypes.c_int),
     ]
 
-# Prepara a função get_simple_stat da nossa biblioteca
 get_simple_stat = libc_helper.get_simple_stat
 get_simple_stat.argtypes = [ctypes.c_char_p, ctypes.POINTER(SimpleStat)]
 get_simple_stat.restype = ctypes.c_int
 
-
-# --- FUNÇÃO get_file_info (AGORA USANDO O AJUDANTE C) ---
-
 def get_file_info(path):
-    """
-    Obtém informações de um arquivo chamando nossa função C compilada,
-    que por sua vez usa a syscall stat.
-    """
     stats = SimpleStat()
     path_bytes = path.encode('utf-8')
-    
-    # Chama a função do nosso helper C
     if get_simple_stat(path_bytes, ctypes.byref(stats)) != 0:
         return None
-
-    # Converte as permissões para o formato octal (ex: '755')
     permissions = oct(stats.mode)[-3:]
-    
-    return {
-        "size": stats.size,
-        "is_dir": bool(stats.is_dir),
-        "permissions": permissions,
-        "mtime": stats.mtime,
-    }
-
-# --- CÓDIGO PARA PARTIÇÕES (PERMANECE O MESMO, POIS JÁ ESTAVA ESTÁVEL) ---
+    return {"size": stats.size, "is_dir": bool(stats.is_dir), "permissions": permissions, "mtime": stats.mtime}
 
 class struct_statvfs(ctypes.Structure):
     _fields_ = [
