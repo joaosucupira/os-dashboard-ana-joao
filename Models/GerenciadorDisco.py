@@ -1,3 +1,5 @@
+# Model especializado na coleta geral de informações de disco '/' e partições '/proc/mounts'
+
 import os
 import logging
 from utils.util_filesystem import get_fs_usage, get_file_info
@@ -28,7 +30,7 @@ class GerenciadorDisco:
                         fs_type = parts[2]
                         
                         if fs_type in ["ext4", "vfat", "ntfs", "btrfs", "xfs"]:
-                            if not os.path.isdir(mount_point):
+                            if not os.path.isdir(mount_point): # os apenas para verificar se de fato é um diretório
                                 continue
                             
                             usage = get_fs_usage(mount_point)
@@ -45,7 +47,7 @@ class GerenciadorDisco:
 
     def list_directory_contents(self, path):
         contents = []
-        if not os.path.isdir(path):
+        if not os.path.isdir(path): # os apenas para verificar se de fato é um diretório
             return contents
 
         # logging.info(f"Listando conteúdo do diretório: {path}")
@@ -55,15 +57,13 @@ class GerenciadorDisco:
                     if entry.name in [".", ".."]:
                         continue
                     
-                    full_path = os.path.join(path, entry.name)
+                    full_path = os.path.join(path, entry.name) # os apenas para manipulação de strings de caminhos
                     
                     try:
-                        # --- CAMADA DE SEGURANÇA ---
-                        # Antes de usar nossa syscall, fazemos um teste com a função segura do Python.
-                        # Se os.stat() falhar, nós pulamos o arquivo.
-                        os.stat(full_path.encode('utf-8'))
+                        # se os.stat() falhar, pulamos o arquivo.
+                        os.stat(full_path.encode('utf-8')) # os apenas para verificar se o arquivo é acessível
                         
-                        # Se o teste acima passou, agora podemos chamar nossa função com mais segurança.
+                        # se o teste acima passou, agora podemos chamar nossa função com mais segurança.
                         info = get_file_info(full_path)
                         
                         if info:

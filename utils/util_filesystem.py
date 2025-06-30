@@ -1,10 +1,11 @@
+
+# funções de baixo nível para pegar informações de arquivos e partições, usando chamadas diretas da biblioteca C (libc).
+
 import ctypes
-import os
 
-# --- Estruturas com tipos explícitos para sistemas de 64 bits ---
+# Mapeamento das estruturas de dados que o C usa.
 
-# Esta é a definição de 'struct stat' para a maioria dos sistemas Linux de 64 bits.
-# Usamos tipos de tamanho fixo (ex: c_uint64) para evitar ambiguidades.
+# 'struct stat': informações de um arquivo (tamanho, permissões, etc).
 class struct_stat(ctypes.Structure):
     _fields_ = [
         ('st_dev', ctypes.c_uint64),      # ID do dispositivo
@@ -13,7 +14,7 @@ class struct_stat(ctypes.Structure):
         ('st_mode', ctypes.c_uint32),     # Permissões
         ('st_uid', ctypes.c_uint32),      # User ID
         ('st_gid', ctypes.c_uint32),      # Group ID
-        ('__pad0', ctypes.c_int32),       # Padding explícito para alinhamento
+        ('__pad0', ctypes.c_int32),       # Padding para alinhamento
         ('st_rdev', ctypes.c_uint64),     # ID do dispositivo (se especial)
         ('st_size', ctypes.c_int64),      # Tamanho em bytes
         ('st_blksize', ctypes.c_int64),   # Tamanho do bloco para I/O
@@ -27,12 +28,12 @@ class struct_stat(ctypes.Structure):
         ('__unused', ctypes.c_int64 * 3), # Reservado
     ]
 
-# Definição de 'struct statvfs' para sistemas de 64 bits.
+# 'struct statvfs': informações sobre uma partição (espaço total, livre, etc).
 class struct_statvfs(ctypes.Structure):
     _fields_ = [
         ('f_bsize', ctypes.c_ulong),
         ('f_frsize', ctypes.c_ulong),
-        ('f_blocks', ctypes.c_ulonglong), # Usamos ulonglong para garantir 64 bits
+        ('f_blocks', ctypes.c_ulonglong), # ulonglong para garantir 64 bits
         ('f_bfree', ctypes.c_ulonglong),
         ('f_bavail', ctypes.c_ulonglong),
         ('f_files', ctypes.c_ulonglong),
@@ -44,18 +45,19 @@ class struct_statvfs(ctypes.Structure):
         ('__f_spare', ctypes.c_int * 6),
     ]
 
-libc = ctypes.CDLL(None, use_errno=True)
+libc = ctypes.CDLL(None)
 
+# Prepara a função 'statvfs' para ser chamada
 statvfs = libc.statvfs
 statvfs.argtypes = [ctypes.c_char_p, ctypes.POINTER(struct_statvfs)]
 statvfs.restype = ctypes.c_int
 
-# A syscall stat mudou. Em sistemas modernos, é __xstat.
-# O Python esconde isso, mas com ctypes, precisamos ser explícitos.
+# Prepara a função '__xstat', a versão moderna da 'stat'
 xstat = libc.__xstat
 xstat.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.POINTER(struct_stat)]
 xstat.restype = ctypes.c_int
 
+# Constante para checar se um arquivo é um diretório
 S_IFDIR = 0o040000
 
 def get_fs_usage(path):
@@ -75,8 +77,7 @@ def get_file_info(path):
     file_stats = struct_stat()
     path_bytes = path.encode('utf-8')
     
-    # Usamos __xstat que é a syscall correta para a struct que definimos.
-    # O primeiro argumento (1) é a versão da struct.
+    # Chama a syscall __xstat
     if xstat(1, path_bytes, ctypes.byref(file_stats)) != 0:
         return None
 
