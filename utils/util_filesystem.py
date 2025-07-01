@@ -1,7 +1,7 @@
-
 # funções de baixo nível para pegar informações de arquivos e partições, usando chamadas diretas da biblioteca C (libc).
 
 import ctypes
+# O import 'stat' foi removido pois não será mais utilizado.
 
 # Mapeamento das estruturas de dados que o C usa.
 
@@ -52,10 +52,10 @@ statvfs = libc.statvfs
 statvfs.argtypes = [ctypes.c_char_p, ctypes.POINTER(struct_statvfs)]
 statvfs.restype = ctypes.c_int
 
-# Prepara a função '__xstat', a versão moderna da 'stat'
-xstat = libc.__xstat
-xstat.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.POINTER(struct_stat)]
-xstat.restype = ctypes.c_int
+# Prepara a função 'stat', a versão padrão e mais segura
+stat_func = libc.stat
+stat_func.argtypes = [ctypes.c_char_p, ctypes.POINTER(struct_stat)]
+stat_func.restype = ctypes.c_int
 
 # Constante para checar se um arquivo é um diretório
 S_IFDIR = 0o040000
@@ -73,19 +73,25 @@ def get_fs_usage(path):
 
     return { "total": total_gb, "used": used_gb, "free": free_gb, "use_perc": use_perc }
 
+# A função 'get_file_info' foi corrigida e unificada.
 def get_file_info(path):
     file_stats = struct_stat()
     path_bytes = path.encode('utf-8')
     
-    # Chama a syscall __xstat
-    if xstat(1, path_bytes, ctypes.byref(file_stats)) != 0:
+    if stat_func(path_bytes, ctypes.byref(file_stats)) != 0:
         return None
 
     is_dir = (file_stats.st_mode & S_IFDIR) != 0
     
+    # --- CORREÇÃO APLICADA AQUI ---
+    # Usamos uma máscara de bits para pegar apenas a parte das permissões do 'st_mode'
+    # 0o777 é a máscara para permissões de usuário, grupo e outros (rwx rwx rwx)
+    permissions = file_stats.st_mode & 0o777
+    
     return {
         "size": file_stats.st_size,
         "is_dir": is_dir,
-        "permissions": oct(file_stats.st_mode)[-3:],
+        # Formata o inteiro das permissões como uma string octal (ex: 755)
+        "permissions": f"{permissions:o}",
         "mtime": file_stats.st_mtime,
     }

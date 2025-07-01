@@ -1,8 +1,9 @@
-# Model especializado na coleta geral de informações de disco '/' e partições '/proc/mounts'
+# GerenciadorDisco.py (versão corrigida e robusta)
 
 import os
 import logging
-from utils.util_filesystem import get_fs_usage, get_file_info
+import stat  # Importar o módulo 'stat' do Python
+from utils.util_filesystem import get_fs_usage # Usaremos apenas a função de uso de disco
 from utils.util_diretorio import GerenciadorDiretorio
 
 logging.basicConfig(
@@ -18,7 +19,6 @@ class GerenciadorDisco:
 
     def get_partitions_info(self):
         partitions = []
-        # logging.info("Iniciando a busca por partições.")
         try:
             with open("/proc/mounts", "r") as f:
                 for line in f:
@@ -30,7 +30,7 @@ class GerenciadorDisco:
                         fs_type = parts[2]
                         
                         if fs_type in ["ext4", "vfat", "ntfs", "btrfs", "xfs"]:
-                            if not os.path.isdir(mount_point): # os apenas para verificar se de fato é um diretório
+                            if not os.path.isdir(mount_point):
                                 continue
                             
                             usage = get_fs_usage(mount_point)
@@ -42,36 +42,41 @@ class GerenciadorDisco:
             logging.error(f"Falha crítica ao ler /proc/mounts: {e}", exc_info=True)
             return []
         
-        # logging.info("Busca por partições finalizada.")
         return partitions
 
     def list_directory_contents(self, path):
         contents = []
-        if not os.path.isdir(path): # os apenas para verificar se de fato é um diretório
+        if not os.path.isdir(path):
             return contents
 
-        # logging.info(f"Listando conteúdo do diretório: {path}")
         try:
+            # Usamos o GerenciadorDiretorio para listar os nomes de forma eficiente
             with GerenciadorDiretorio(path) as gd:
                 for entry in gd:
                     if entry.name in [".", ".."]:
                         continue
                     
-                    full_path = os.path.join(path, entry.name) # os apenas para manipulação de strings de caminhos
+                    full_path = os.path.join(path, entry.name)
                     
                     try:
-                        # se os.stat() falhar, pulamos o arquivo.
-                        os.stat(full_path.encode('utf-8')) # os apenas para verificar se o arquivo é acessível
+                        # --- NOVA LÓGICA COM OS.STAT() ---
+                        # Em vez de chamar get_file_info, usamos os.stat() que é mais confiável.
+                        file_stats = os.stat(full_path)
                         
-                        # se o teste acima passou, agora podemos chamar nossa função com mais segurança.
-                        info = get_file_info(full_path)
+                        # Extrai as permissões do modo stat
+                        permissions = stat.S_IMODE(file_stats.st_mode)
                         
-                        if info:
-                            contents.append({ "name": entry.name, "path": full_path, **info })
-                        else:
-                            logging.warning(f"Nossa syscall get_file_info() falhou para '{full_path}', embora os.stat() tenha funcionado.")
+                        info = {
+                            "name": entry.name,
+                            "path": full_path,
+                            "size": file_stats.st_size,
+                            "is_dir": stat.S_ISDIR(file_stats.st_mode),
+                            "permissions": f"{permissions:o}", # Formata como octal
+                            "mtime": file_stats.st_mtime,
+                        }
+                        contents.append(info)
 
-                    except Exception as e:
+                    except (PermissionError, FileNotFoundError) as e:
                         # Se os.stat() falhar, registramos o erro e continuamos.
                         logging.warning(f"Ignorando arquivo inacessível '{full_path}'. Erro: {e}")
                         continue
@@ -81,5 +86,6 @@ class GerenciadorDisco:
         except Exception as e:
             logging.critical(f"Erro não esperado ao listar o diretório '{path}': {e}", exc_info=True)
 
+        # Ordena: diretórios primeiro, depois arquivos, ambos alfabeticamente
         contents.sort(key=lambda x: (not x['is_dir'], x['name'].lower()))
         return contents

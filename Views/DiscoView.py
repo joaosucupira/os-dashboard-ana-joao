@@ -1,3 +1,5 @@
+# DiscoView.py (versão com navegação corrigida)
+
 import customtkinter as ctk
 from customtkinter import CTkLabel, CTkTextbox, CTkFrame
 import datetime
@@ -27,7 +29,8 @@ class DiscoView(ctk.CTkToplevel):
         self.browser_text.pack(fill="both", expand=True, padx=5, pady=5)
         self.browser_text.bind("<Double-1>", self.on_double_click)
         
-        self.current_dir_contents = []
+        # --- MUDANÇA: Lista para mapear linhas clicáveis aos dados ---
+        self.display_items = []
 
     def mostrar_particoes(self, partitions):
         self.partitions_text.configure(state="normal")
@@ -43,44 +46,46 @@ class DiscoView(ctk.CTkToplevel):
         
         self.partitions_text.configure(state="disabled")
 
+    # Trecho de DiscoView.py para modificar
+
     def mostrar_arquivos(self, path, contents):
         self.current_path_label.configure(text=f"Path: {path}")
+        self.browser_text.configure(state="normal") # Habilitar para edição
         self.browser_text.delete("1.0", "end")
-        self.current_dir_contents = contents
+        
+        self.display_items = []
 
         header = f"{'Nome':<50} {'Tamanho (Bytes)':>20} {'Permissões':>12} {'Modificado em':>20}\n"
         self.browser_text.insert("end", header)
         self.browser_text.insert("end", "="*102 + "\n")
         
         if path != "/":
-             self.browser_text.insert("end", f"{'[..]':<50}\n")
+            self.display_items.append({'name': '..', 'path': '..', 'is_dir': True})
+            self.browser_text.insert("end", f"{'[..]':<50}\n")
 
         for item in contents:
+            self.display_items.append(item)
             size_str = str(item['size']) if not item['is_dir'] else "<DIR>"
             mtime_str = datetime.datetime.fromtimestamp(item['mtime']).strftime('%Y-%m-%d %H:%M')
             name_str = f"[{item['name']}]" if item['is_dir'] else item['name']
             
             line = f"{name_str:<50} {size_str:>20} {item['permissions']:>12} {mtime_str:>20}\n"
             self.browser_text.insert("end", line)
+        
+        self.browser_text.configure(state="disabled") # <-- REMOVA OU COMENTE ESTA LINHA   self.browser_text.configure(state="disabled") # Desabilitar novamente
 
     def on_double_click(self, event):
+        # --- MUDANÇA: Lógica de clique simplificada e robusta ---
         index = self.browser_text.index(f"@{event.x},{event.y}")
         line_num = int(index.split('.')[0])
         
-        if line_num <= 2:
-            return
-            
-        current_path = self.current_path_label.cget("text").replace("Path: ", "")
-        
-        if current_path != "/" and line_num == 3:
-             self.nav_callback("..")
-             return
+        # O conteúdo clicável começa na linha 3 (após 2 linhas de cabeçalho)
+        content_line_index = line_num - 3
 
-        content_index = line_num - 3
-        if current_path != "/":
-            content_index -=1
-        
-        if 0 <= content_index < len(self.current_dir_contents):
-            item = self.current_dir_contents[content_index]
-            if item['is_dir']:
-                self.nav_callback(item['path'])
+        # Verifica se o clique foi em uma linha de conteúdo válida
+        if 0 <= content_line_index < len(self.display_items):
+            item_clicado = self.display_items[content_line_index]
+            
+            # Se for um diretório (ou o item ".."), navega
+            if item_clicado['is_dir']:
+                self.nav_callback(item_clicado['path'])
