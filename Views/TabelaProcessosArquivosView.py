@@ -27,7 +27,6 @@ class TabelaProcessosArquivosView(ctk.CTkToplevel):
                 f"{proc['arquivos']:<10}"
                 f"{proc['sockets']:<10}"
                 f"{proc['pipes']:<10}"
-                f"{proc['mutexes']:<10}"
                 f"{proc['outros']:<10}\n"
             )
             self.tabela.insert("end", linha_texto)
@@ -43,7 +42,6 @@ class TabelaProcessosArquivosView(ctk.CTkToplevel):
             f"{'Arquivos':<10}"
             f"{'Sockets':<10}"
             f"{'Pipes':<10}"
-            f"{'Mutexes':<10}"
             f"{'Outros':<10}\n"
         )
         header = CTkLabel(
